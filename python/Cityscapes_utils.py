@@ -99,7 +99,7 @@ def parse_label():
         label = obj.name
         color = obj.color
         color2index[color] = idx
-        print("{}:{}".format(color, idx))
+        # print("{}:{}".format(color, idx))
 
     # parse train, val, test data    
     for label_dir, index_dir, csv_file in zip([train_dir, val_dir, test_dir], [train_idx_dir, val_idx_dir, test_idx_dir], [train_file, val_file, test_file]):
