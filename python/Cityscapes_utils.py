@@ -99,7 +99,7 @@ def parse_label():
         label = obj.name
         color = obj.color
         color2index[color] = idx
-        print("{}:{}\n".format(color, idx))
+        print("{}:{}".format(color, idx))
 
     # parse train, val, test data    
     for label_dir, index_dir, csv_file in zip([train_dir, val_dir, test_dir], [train_idx_dir, val_idx_dir, test_idx_dir], [train_file, val_file, test_file]):
@@ -131,18 +131,22 @@ def parse_label():
                 height, weight, _ = img.shape
         
                 idx_mat = np.zeros((height, weight))
+                numWithIdx = 0
+                numNoIdx = 0
                 for h in range(height):
                     for w in range(weight):
                         color = tuple(img[h, w])
                         try:
                             index = color2index[color]
                             idx_mat[h, w] = index
+                            numWithIdx += 1
                         except:
                             # no index, assign to void
-                            idx_mat[h, w] = 19
+                            idx_mat[h, w] = 20
+                            numNoIdx += 1
                 idx_mat = idx_mat.astype(np.uint8)
                 np.save(lab_name, idx_mat)
-                print("  Finish %s" % (filename))
+                print("  Finish %s, %d, %d" % (filename, numWithIdx, numNoIdx))
 
 
 '''debug function'''
