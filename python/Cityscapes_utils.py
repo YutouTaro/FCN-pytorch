@@ -14,7 +14,7 @@ import os
 #############################
     # global variables #
 #############################
-root_dir  = "CityScapes/"
+root_dir  = "/content/drive/My Drive/"
 
 label_dir = os.path.join(root_dir, "gtFine")
 train_dir = os.path.join(label_dir, "train")
