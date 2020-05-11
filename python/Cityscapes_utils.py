@@ -124,7 +124,7 @@ def parse_label():
                 print("Parse %s" % (filename))
                 img = os.path.join(city_dir, filename)
                 # img = scipy.misc.imread(img, mode='RGB') ## imread is removed in SciPy 1.2.0
-                img = imageio.imread(img, mode='RGB')
+                img = imageio.imread(img)
                 height, weight, _ = img.shape
         
                 idx_mat = np.zeros((height, weight))
