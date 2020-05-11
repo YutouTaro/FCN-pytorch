@@ -110,7 +110,8 @@ def parse_label():
             data_dir = city_dir.replace("gtFine", "leftImg8bit")
             if not os.path.exists(city_idx_dir):
                 os.makedirs(city_idx_dir)
-            filenames = os.listdir(city_dir).sort()
+            filenames = os.listdir(city_dir)
+            filenames.sort()
             for filename in filenames:
                 if 'color' not in filename:
                     continue
