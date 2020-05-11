@@ -139,7 +139,7 @@ def parse_label():
                 numNoIdx = 0
                 for h in range(height):
                     for w in range(weight):
-                        color = tuple(img[h, w])
+                        color = tuple(img[h, w])[:3] # dono why the tuple length is FOUR, last element is 255???
                         if color in dictIdx.keys():
                             dictIdx[color] += 1
                         else:
@@ -155,8 +155,8 @@ def parse_label():
                 idx_mat = idx_mat.astype(np.uint8)
                 np.save(lab_name, idx_mat)
                 print("  Finish %s, %d, %d" % (filename, numWithIdx, numNoIdx))
-                print(dictIdx)
-                print("\n")
+                # print(dictIdx)
+                # print("\n")
 
 
 '''debug function'''
