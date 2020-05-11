@@ -91,6 +91,7 @@ labels = [
 
 def parse_label():
     # change label to class index
+    print("====================\n generating index dict")
     color2index[(0,0,0)] = 0  # add an void class 
     for obj in labels:
         # if obj.ignoreInEval:
@@ -99,8 +100,8 @@ def parse_label():
         label = obj.name
         color = obj.color
         color2index[color] = idx
-        # print("{}:{}".format(color, idx))
-
+        print("{}:{}".format(color, idx))
+    print("====================\n")
 
     # parse train, val, test data    
     for label_dir, index_dir, csv_file in zip([train_dir, val_dir, test_dir], [train_idx_dir, val_idx_dir, test_idx_dir], [train_file, val_file, test_file]):
@@ -133,11 +134,16 @@ def parse_label():
                 height, weight, _ = img.shape
         
                 idx_mat = np.zeros((height, weight))
+                dictIdx = {}
                 numWithIdx = 0
                 numNoIdx = 0
                 for h in range(height):
                     for w in range(weight):
                         color = tuple(img[h, w])
+                        if color in dictIdx.keys():
+                            dictIdx[color] += 1
+                        else:
+                            dictIdx[color] = 1
                         try:
                             index = color2index[color]
                             idx_mat[h, w] = index
@@ -149,6 +155,8 @@ def parse_label():
                 idx_mat = idx_mat.astype(np.uint8)
                 np.save(lab_name, idx_mat)
                 print("  Finish %s, %d, %d" % (filename, numWithIdx, numNoIdx))
+                print(dictIdx)
+                print("\n")
 
 
 '''debug function'''
