@@ -6,9 +6,12 @@ from collections import namedtuple
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
-import scipy.misc
+# import scipy.misc
+import imageio
 import random
 import os
+
+imageio
 
 
 #############################
@@ -120,7 +123,8 @@ def parse_label():
                     continue
                 print("Parse %s" % (filename))
                 img = os.path.join(city_dir, filename)
-                img = scipy.misc.imread(img, mode='RGB')
+                # img = scipy.misc.imread(img, mode='RGB') ## imread is removed in SciPy 1.2.0
+                img = imageio.imread(img, mode='RGB')
                 height, weight, _ = img.shape
         
                 idx_mat = np.zeros((height, weight))
