@@ -102,7 +102,8 @@ def train():
             optimizer.step()
 
             if iter % 10 == 0:
-                print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data[0]))
+                # print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data[0])) ### PyTorch>=0.5, the index of 0-dim tensor is invalid
+                print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data))
 
             model_name = os.path.join(model_path, "net_latest.pth")
             torch.save(fcn_model, model_name)
