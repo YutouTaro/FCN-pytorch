@@ -119,7 +119,11 @@ def parse_label():
                 if 'color' not in filename:
                     continue
                 lab_name = os.path.join(city_idx_dir, filename)
-                img_name = filename.split("gtFine")[0] + "leftImg8bit.png"
+                if "gtFine" in filename:
+                    img_name = filename.split("gtFine")[0] + "leftImg8bit.png"
+                else:
+                    img_name = filename.split("gtCoarse")[0] + "leftImg8bit.png"
+
                 img_name = os.path.join(data_dir, img_name)
                 f.write("{},{}.npy\n".format(img_name, lab_name))
 
