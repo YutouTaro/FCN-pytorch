@@ -14,7 +14,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import utils
 
 
-root_dir   = "CityScapes/"
+root_dir   = "/content/drive/My Drive/"
 train_file = os.path.join(root_dir, "train.csv")
 val_file   = os.path.join(root_dir, "val.csv")
 
