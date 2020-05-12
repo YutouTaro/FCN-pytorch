@@ -134,7 +134,7 @@ def val(epoch):
             total_ious.append(iou(p, t))
             pixel_accs.append(pixel_acc(p, t))
 
-        print("\titer: %d, %.2f sec\n" % (iter, time.time()-timeIter))
+        print("\titer: %d, %.2f sec" % (iter, time.time()-timeIter))
 
     # Calculate average IoU
     total_ious = np.array(total_ious).T  # n_class * val_len
