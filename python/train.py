@@ -10,7 +10,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
 from fcn import VGGNet, FCN32s, FCN16s, FCN8s, FCNs
-from Cityscapes_loader import CityscapesDataset
+from Cityscapes_loader import CityScapesDataset
 from CamVid_loader import CamVidDataset
 
 from matplotlib import pyplot as plt
@@ -51,13 +51,13 @@ num_gpu = list(range(torch.cuda.device_count()))
 if sys.argv[1] == 'CamVid':
     train_data = CamVidDataset(csv_file=train_file, phase='train')
 else:
-    train_data = CityscapesDataset(csv_file=train_file, phase='train')
+    train_data = CityScapesDataset(csv_file=train_file, phase='train')
 train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=8)
 
 if sys.argv[1] == 'CamVid':
     val_data = CamVidDataset(csv_file=val_file, phase='val', flip_rate=0)
 else:
-    val_data = CityscapesDataset(csv_file=val_file, phase='val', flip_rate=0)
+    val_data = CityScapesDataset(csv_file=val_file, phase='val', flip_rate=0)
 val_loader = DataLoader(val_data, batch_size=1, num_workers=8)
 
 vgg_model = VGGNet(requires_grad=True, remove_fc=True)
