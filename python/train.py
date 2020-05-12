@@ -117,6 +117,7 @@ def val(epoch):
     total_ious = []
     pixel_accs = []
     for iter, batch in enumerate(val_loader):
+        timeIter = time.time()
         if use_gpu:
             inputs = Variable(batch['X'].cuda())
         else:
@@ -132,6 +133,8 @@ def val(epoch):
         for p, t in zip(pred, target):
             total_ious.append(iou(p, t))
             pixel_accs.append(pixel_acc(p, t))
+
+        print("\titer: %d, %.2f sec\n" % (iter, time.time()-timeIter))
 
     # Calculate average IoU
     total_ious = np.array(total_ious).T  # n_class * val_len
