@@ -46,7 +46,8 @@ class CityScapesDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        img_name   = self.data.ix[idx, 0]
+        # img_name   = self.data.ix[idx, 0] ### .ix is deprecated
+        img_name   = self.data.iloc[idx, 0]
         img        = scipy.misc.imread(img_name, mode='RGB')
         label_name = self.data.ix[idx, 1]
         label      = np.load(label_name)
