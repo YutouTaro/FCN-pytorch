@@ -29,13 +29,13 @@ momentum   = 0
 w_decay    = 1e-5
 step_size  = 50
 gamma      = 0.5
-configs    = "FCNs-BCEWithLogits_batch{}_epoch{}_RMSprop_scheduler-step{}-gamma{}_lr{}_momentum{}_w_decay{}".format(batch_size, epochs, step_size, gamma, lr, momentum, w_decay)
+configs    = "FCNs-BCEWithLogits_batch{}_epoch{}_RMSprop_scheduler_step{}_gamma{}_lr{}_momentum{}_w_decay{}".format(batch_size, epochs, step_size, gamma, lr, momentum, w_decay)
 print("Configs:", configs)
 
 if sys.argv[1] == 'CamVid':
     root_dir   = "CamVid/"
-else
-    root_dir   = "CityScapes/"
+else: # cityscapes
+    root_dir   = "/content/drive/My Drive/"
 train_file = os.path.join(root_dir, "train.csv")
 val_file   = os.path.join(root_dir, "val.csv")
 
@@ -103,9 +103,11 @@ def train():
 
             if iter % 10 == 0:
                 print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data[0]))
-        
+
+            model_name = os.path.join(model_path, "net_latest.pth")
+            torch.save(fcn_model, model_name)
         print("Finish epoch {}, time elapsed {}".format(epoch, time.time() - ts))
-        torch.save(fcn_model, model_path)
+        # torch.save(fcn_model, model_path)
 
         val(epoch)
 
