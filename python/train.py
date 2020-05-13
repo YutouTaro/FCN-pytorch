@@ -22,7 +22,7 @@ import datetime
 
 n_class    = 20
 
-batch_size = 8
+batch_size = 6
 epochs     = 500
 lr         = 1e-4
 momentum   = 0
@@ -40,7 +40,7 @@ train_file = os.path.join(root_dir, "train.csv")
 val_file   = os.path.join(root_dir, "val.csv")
 
 # create dir for model
-model_dir = "models"
+model_dir = os.path.join(root_dir, "models")
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
 timeNow = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(seconds=28800)))
