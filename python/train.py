@@ -47,7 +47,7 @@ timeNow = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(seconds=
 model_folder = timeNow.strftime("net-%y%m%d-%H%M%S")
 model_path = os.path.join(model_dir, model_folder)
 os.makedirs(model_path)
-with open( os.path.join(model_path, "config.txt") ) as fout:
+with open( os.path.join(model_path, "config.txt"), "w" ) as fout:
     fout.write(configs)
 
 use_gpu = torch.cuda.is_available()
