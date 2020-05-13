@@ -118,7 +118,8 @@ def train():
         print("Epoch %d , time elapsed %.2f sec" % (epoch, time.time() - ts))
         # torch.save(fcn_model, model_path)
 
-        val(epoch)
+        ##### commented the val in each epoch
+        # val(epoch)
 
 
 def val(epoch):
@@ -180,5 +181,5 @@ def pixel_acc(pred, target):
 
 
 if __name__ == "__main__":
-    val(0)  # show the accuracy before training
+    # val(0)  # show the accuracy before training
     train()
