@@ -22,7 +22,7 @@ import os
 
 n_class    = 20
 
-batch_size = 256
+batch_size = 128
 epochs     = 500
 lr         = 1e-4
 momentum   = 0
