@@ -19,7 +19,7 @@ import time
 import sys
 import os
 import datetime
-
+from shutil import copyfile
 n_class    = 20
 
 batch_size = 6
@@ -110,12 +110,16 @@ def train():
             if iter % 10 == 0:
                 # print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data[0])) ### PyTorch>=0.5, the index of 0-dim tensor is invalid
                 # print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data))
-                print("\tepoch: %d, iter %d, loss: .3f, %.2f sec" % (epoch, iter, loss.data, time.time()-timeTrain))
+                print("\tepoch: %d, iter %d, loss: %.3f, %.2f sec" % (epoch, iter, loss.data, time.time()-timeTrain))
                 timeTrain = time.time()
 
-            model_name = os.path.join(model_path, "net_latest.pth")
-            torch.save(fcn_model, model_name)
+        model_name = os.path.join(model_path, "net_latest.pth")
+        torch.save(fcn_model, model_name)
         print("Epoch %d , time elapsed %.2f sec" % (epoch, time.time() - ts))
+        if epoch % 10 == 0:
+            net_name = os.path.join(model_path, "net_%03d.pth"%(epoch))
+            copyfile(model_name, net_name)
+
         # torch.save(fcn_model, model_path)
 
         ##### commented the val in each epoch
