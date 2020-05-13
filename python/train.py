@@ -92,6 +92,7 @@ def train():
         scheduler.step()
 
         ts = time.time()
+        timeTrain = time.time()
         for iter, batch in enumerate(train_loader):
             optimizer.zero_grad()
 
@@ -108,11 +109,13 @@ def train():
 
             if iter % 10 == 0:
                 # print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data[0])) ### PyTorch>=0.5, the index of 0-dim tensor is invalid
-                print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data))
+                # print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data))
+                print("\tepoch: %d, iter %d, loss: .3f, %.2f sec" % (epoch, iter, loss.data, time.time()-timeTrain))
+                timeTrain = time.time()
 
             model_name = os.path.join(model_path, "net_latest.pth")
             torch.save(fcn_model, model_name)
-        print("Finish epoch {}, time elapsed {}".format(epoch, time.time() - ts))
+        print("Epoch %d , time elapsed %.2f sec" % (epoch, time.time() - ts))
         # torch.save(fcn_model, model_path)
 
         val(epoch)
