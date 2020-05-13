@@ -18,11 +18,11 @@ import numpy as np
 import time
 import sys
 import os
-
+import datetime
 
 n_class    = 20
 
-batch_size = 128
+batch_size = 8
 epochs     = 500
 lr         = 1e-4
 momentum   = 0
@@ -43,7 +43,10 @@ val_file   = os.path.join(root_dir, "val.csv")
 model_dir = "models"
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
-model_path = os.path.join(model_dir, configs)
+timeNow = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(seconds=28800)))
+model_folder = timeNow.strftime("net-%y%m%d-%H%M%S")
+model_path = os.path.join(model_dir, model_folder)
+os.makedirs(model_path)
 
 use_gpu = torch.cuda.is_available()
 num_gpu = list(range(torch.cuda.device_count()))
