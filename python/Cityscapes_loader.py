@@ -14,6 +14,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import utils
 
 import imageio
+from skimage import transform
 
 root_dir   = "/content/drive/My Drive/"
 train_file = os.path.join(root_dir, "train.csv")
@@ -48,10 +49,12 @@ class CityScapesDataset(Dataset):
 
     def __getitem__(self, idx):
         # img_name   = self.data.ix[idx, 0] ### .ix is deprecated
-        img_name   = self.data.iloc[idx, 0]
         # img        = scipy.misc.imread(img_name, mode='RGB')  ## imread is removed in SciPy 1.2.0
-        img        = imageio.imread(img_name)
         # label_name = self.data.ix[idx, 1]
+        img_name = self.data.iloc[idx, 0]
+        img        = imageio.imread(img_name)
+        height, width = img.shape
+        img = (transform.resize(img, (height/2, width/2))*255).astype(np.uint8)
         label_name = self.data.iloc[idx, 1]
         label      = np.load(label_name)
 
