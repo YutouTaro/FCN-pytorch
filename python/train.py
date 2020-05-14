@@ -9,9 +9,9 @@ from torch.optim import lr_scheduler
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
-from fcn import VGGNet, FCN32s, FCN16s, FCN8s, FCNs
-from Cityscapes_loader import CityScapesDataset
-from CamVid_loader import CamVidDataset
+from .fcn import VGGNet, FCN32s, FCN16s, FCN8s, FCNs
+from .Cityscapes_loader import CityScapesDataset
+from .CamVid_loader import CamVidDataset
 
 from matplotlib import pyplot as plt
 import numpy as np
@@ -114,7 +114,8 @@ def train():
                 timeTrain = time.time()
 
         model_name = os.path.join(model_path, "net_latest.pth")
-        torch.save(fcn_model, model_name)
+        # torch.save(fcn_model, model_name)
+        torch.save(fcn_model.cpu().state_dict(), model_name)
         print("Epoch %d , time elapsed %.2f sec" % (epoch, time.time() - ts))
         if epoch % 10 == 0:
             net_name = os.path.join(model_path, "net_%03d.pth"%(epoch))
