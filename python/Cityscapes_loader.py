@@ -53,7 +53,7 @@ class CityScapesDataset(Dataset):
         # label_name = self.data.ix[idx, 1]
         img_name = self.data.iloc[idx, 0]
         img        = imageio.imread(img_name)
-        height, width = img.shape
+        height, width, channel = img.shape
         img = (transform.resize(img, (height/2, width/2))*255).astype(np.uint8)
         label_name = self.data.iloc[idx, 1]
         label      = np.load(label_name)
