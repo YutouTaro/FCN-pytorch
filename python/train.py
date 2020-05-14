@@ -9,9 +9,9 @@ from torch.optim import lr_scheduler
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
-from .fcn import VGGNet, FCN32s, FCN16s, FCN8s, FCNs
-from .Cityscapes_loader import CityScapesDataset
-from .CamVid_loader import CamVidDataset
+from fcn import VGGNet, FCN32s, FCN16s, FCN8s, FCNs
+from Cityscapes_loader import CityScapesDataset
+from CamVid_loader import CamVidDataset
 
 from matplotlib import pyplot as plt
 import numpy as np
