@@ -8,10 +8,9 @@ import matplotlib.image as mpimg
 import numpy as np
 # import scipy.misc
 import imageio
+from PIL import Image
 import random
 import os
-
-imageio
 
 
 #############################
@@ -33,9 +32,9 @@ for dir in [train_idx_dir, val_idx_dir, test_idx_dir]:
     if not os.path.exists(dir):
         os.makedirs(dir)
 
-train_file = os.path.join(root_dir, "train.csv")
-val_file   = os.path.join(root_dir, "val.csv")
-test_file  = os.path.join(root_dir, "test.csv")
+path_train_file = os.path.join(root_dir, "train.csv")
+path_val_file   = os.path.join(root_dir, "val.csv")
+path_test_file  = os.path.join(root_dir, "test.csv")
 
 color2index = {}
 
@@ -104,9 +103,9 @@ def parse_label():
     print("====================\n")
 
     # parse train, val, test data    
-    for label_dir, index_dir, csv_file in zip([train_dir, val_dir, test_dir], [train_idx_dir, val_idx_dir, test_idx_dir], [train_file, val_file, test_file]):
-        f = open(csv_file, "w")
-        f.write("img,label\n")
+    for label_dir, index_dir, path_csv_file in zip([train_dir, val_dir, test_dir], [train_idx_dir, val_idx_dir, test_idx_dir], [path_train_file, path_val_file, path_test_file]):
+        fout_csv = open(path_csv_file, "w")
+        fout_csv.write("img,label\n")
         for city in os.listdir(label_dir):
             city_dir = os.path.join(label_dir, city)
             city_idx_dir = os.path.join(index_dir, city)
@@ -125,21 +124,21 @@ def parse_label():
                     img_name = filename.split("gtCoarse")[0] + "leftImg8bit.png"
 
                 img_name = os.path.join(data_dir, img_name)
-                f.write("{},{}.npy\n".format(img_name, lab_name))
+                fout_csv.write("{},{}.npy\n".format(img_name, lab_name))
 
                 if os.path.exists(lab_name + '.npy'):
                     print("Skip %s" % (filename))
                     continue
                 print("Parse %s" % (filename))
                 img = os.path.join(city_dir, filename)
-                # img = scipy.misc.imread(img, mode='RGB') ## imread is removed in SciPy 1.2.0
-                # print("imageName: "+ img+ "\n")
+                ## img = scipy.misc.imread(img, mode='RGB') ## imread is removed in SciPy 1.2.0
+                ## print("imageName: "+ img+ "\n")
                 img = imageio.imread(img)
-                height, weight, _ = img.shape
-                idx_mat = np.zeros((height, weight))
+                height, width, _ = img.shape
+                idx_mat = np.zeros((height, width))
                 numNoIdx = 0
                 for h in range(height):
-                    for w in range(weight):
+                    for w in range(width):
                         color = tuple(img[h, w])[:3] # dono why the tuple length is FOUR, last element is 255???
                         try:
                             index = color2index[color]
