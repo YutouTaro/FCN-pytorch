@@ -10,7 +10,6 @@ else:
 csvFiles = ["train.csv", "val.csv", "test.csv"]
 
 fout = open( os.path.join(path_folder, "list.txt"), "w" )
-
 for fileName in csvFiles:
   path_file = os.path.join(path_folder, fileName)
   if not os.path.isfile(path_file):
@@ -36,3 +35,4 @@ for fileName in csvFiles:
     fout.write("\t%s %d\n" % (city, itemDict[city]))
 
 fout.close()
+print("File saved to %s" % (os.path.join(path_folder, "list.txt")))
