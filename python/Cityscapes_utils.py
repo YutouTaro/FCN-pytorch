@@ -93,10 +93,10 @@ def parse_label():
     print("====================\n generating index dict")
     color2index[(0,0,0)] = 0  # add an void class 
     for obj in labels:
-        # if obj.ignoreInEval:
-        #     continue
+        if obj.ignoreInEval:
+            continue
         idx   = obj.trainId
-        label = obj.name
+        # label = obj.name
         color = obj.color
         color2index[color] = idx
         print("{}:{}".format(color, idx))
@@ -118,10 +118,10 @@ def parse_label():
                 if 'color' not in filename:
                     continue
                 lab_name = os.path.join(city_idx_dir, filename)
-                if "gtFine" in filename:
-                    img_name = filename.split("gtFine")[0] + "leftImg8bit.png"
+                if "gtFine_color" in filename:
+                    img_name = filename.split("gtFine_color")[0] + "leftImg8bit.png"
                 else:
-                    img_name = filename.split("gtCoarse")[0] + "leftImg8bit.png"
+                    img_name = filename.split("gtCoarse_color")[0] + "leftImg8bit.png"
 
                 img_name = os.path.join(data_dir, img_name)
                 fout_csv.write("{},{}.npy\n".format(img_name, lab_name))
@@ -130,10 +130,10 @@ def parse_label():
                     print("Skip %s" % (filename))
                     continue
                 print("Parse %s" % (filename))
-                img = os.path.join(city_dir, filename)
+                img_path = os.path.join(city_dir, filename)
                 ## img = scipy.misc.imread(img, mode='RGB') ## imread is removed in SciPy 1.2.0
                 ## print("imageName: "+ img+ "\n")
-                img = imageio.imread(img)
+                img = imageio.imread(img_path)
                 height, width, _ = img.shape
                 idx_mat = np.zeros((height, width))
                 numNoIdx = 0
