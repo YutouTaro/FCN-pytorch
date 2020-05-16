@@ -117,7 +117,8 @@ def train():
 
         model_name = os.path.join(model_path, "net_latest.pth")
         # torch.save(fcn_model, model_name)
-        torch.save(fcn_model.cpu().state_dict(), model_name)
+        # torch.save(fcn_model.cpu().state_dict(), model_name)
+        torch.save(fcn_model.module.state_dict(), model_name)
         print("Epoch %d , time elapsed %.2f sec" % (epoch, time.time() - ts))
         if epoch % 10 == 0:
             net_name = os.path.join(model_path, "net_%03d.pth"%(epoch))
