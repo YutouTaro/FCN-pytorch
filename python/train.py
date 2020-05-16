@@ -89,7 +89,7 @@ pixel_scores = np.zeros(epochs)
 
 def train():
     for epoch in range(epochs):
-        scheduler.step()
+        # scheduler.step() # since torch 1.1.0, `lr_scheduler.step()` must be called after `optimizer.step()`, so move to the end
 
         ts = time.time()
         timeTrain = time.time()
@@ -112,6 +112,7 @@ def train():
                 # print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data))
                 print("\tepoch: %d, iter %d, loss: %.3f, %.2f sec" % (epoch, iter, loss.data, time.time()-timeTrain))
                 timeTrain = time.time()
+        scheduler.step()
 
         model_name = os.path.join(model_path, "net_latest.pth")
         # torch.save(fcn_model, model_name)
