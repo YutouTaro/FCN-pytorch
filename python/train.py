@@ -74,6 +74,7 @@ if use_gpu:
     fcn_model = fcn_model.cuda()
     fcn_model = nn.DataParallel(fcn_model, device_ids=num_gpu)
     print("Finish cuda loading, time elapsed {}".format(time.time() - ts))
+    device = torch.device("cuda:0")
 
 criterion = nn.BCEWithLogitsLoss()
 optimizer = optim.RMSprop(fcn_model.parameters(), lr=lr, momentum=momentum, weight_decay=w_decay)
@@ -97,8 +98,8 @@ def train():
             optimizer.zero_grad()
 
             if use_gpu:
-                inputs = Variable(batch['X'].cuda())
-                labels = Variable(batch['Y'].cuda())
+                inputs = Variable(batch['X']).to(device)
+                labels = Variable(batch['Y']).to(device)
             else:
                 inputs, labels = Variable(batch['X']), Variable(batch['Y'])
 
