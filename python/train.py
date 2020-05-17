@@ -31,8 +31,11 @@ step_size  = 50
 gamma      = 0.5
 
 continueTrain = True
-epoch_count = 250
-save_path = "/content/drive/My Drive/models/net-%s/net_%03d.pth" % ("200516-225630", epoch_count)
+if continueTrain:
+    epoch_count = 250 # opt.epoch_count
+    save_path = "/content/drive/My Drive/models/net-%s/net_%03d.pth" % ("200516-225630", epoch_count)
+else:
+    epoch_count = 0
 configs    = "FCNs-BCEWithLogits_batch{}_epoch{}_RMSprop_scheduler_step{}_gamma{}_lr{}_momentum{}_w_decay{}".format(batch_size, epochs, step_size, gamma, lr, momentum, w_decay)
 print("Configs:", configs)
 
@@ -95,7 +98,7 @@ pixel_scores = np.zeros(epochs)
 
 
 def train():
-    for epoch in range(epoch_count-1, epochs):
+    for epoch in range(epoch_count+1, epochs):
         # scheduler.step() # since torch 1.1.0, `lr_scheduler.step()` must be called after `optimizer.step()`, so move to the end
 
         ts = time.time()
