@@ -29,6 +29,10 @@ momentum   = 0
 w_decay    = 1e-5
 step_size  = 50
 gamma      = 0.5
+
+continueTrain = True
+epoch_count = 250
+save_path = "/content/drive/My Drive/models/net-%s/net_%03d.pth" % ("200516-225630", epoch_count)
 configs    = "FCNs-BCEWithLogits_batch{}_epoch{}_RMSprop_scheduler_step{}_gamma{}_lr{}_momentum{}_w_decay{}".format(batch_size, epochs, step_size, gamma, lr, momentum, w_decay)
 print("Configs:", configs)
 
@@ -67,6 +71,8 @@ val_loader = DataLoader(val_data, batch_size=1, num_workers=8)
 
 vgg_model = VGGNet(requires_grad=True, remove_fc=True)
 fcn_model = FCNs(pretrained_net=vgg_model, n_class=n_class)
+if continueTrain:
+    fcn_model.load_state_dict(torch.load(save_path))
 
 if use_gpu:
     ts = time.time()
@@ -89,7 +95,7 @@ pixel_scores = np.zeros(epochs)
 
 
 def train():
-    for epoch in range(epochs):
+    for epoch in range(epoch_count-1, epochs):
         # scheduler.step() # since torch 1.1.0, `lr_scheduler.step()` must be called after `optimizer.step()`, so move to the end
 
         ts = time.time()
