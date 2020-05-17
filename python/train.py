@@ -95,7 +95,7 @@ pixel_scores = np.zeros(epochs)
 
 
 def train():
-    for epoch in range(epoch_count-1, epochs):
+    for epoch in range(epoch_count+1, epochs):
         # scheduler.step() # since torch 1.1.0, `lr_scheduler.step()` must be called after `optimizer.step()`, so move to the end
 
         ts = time.time()
