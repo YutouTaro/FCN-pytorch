@@ -76,6 +76,7 @@ vgg_model = VGGNet(requires_grad=True, remove_fc=True)
 fcn_model = FCNs(pretrained_net=vgg_model, n_class=n_class)
 if continueTrain:
     fcn_model.load_state_dict(torch.load(save_path))
+    print("loaded parameters from %s" % (save_path))
 
 if use_gpu:
     ts = time.time()
