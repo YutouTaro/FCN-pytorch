@@ -114,20 +114,22 @@ def train():
             loss.backward()
             optimizer.step()
 
+            if iter % 10 == 0:
+                # print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data[0])) ### PyTorch>=0.5, the index of 0-dim tensor is invalid
+                # print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data))
+                lr = optimizer.param_groups[0]['lr']
+                print("\tepoch: %d, iter %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (epoch, iter, loss.data, lr, time.time() - timeTrain))
+                timeTrain = time.time()
+
         scheduler.step()
 
-        if iter % 10 == 0:
-            # print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data[0])) ### PyTorch>=0.5, the index of 0-dim tensor is invalid
-            # print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data))
-            lr = optimizer.param_groups[0]['lr']
-            print("\tepoch: %d, iter %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (epoch, iter, loss.data, lr, time.time() - timeTrain))
-            timeTrain = time.time()
 
         model_name = os.path.join(model_path, "net_latest.pth")
         # torch.save(fcn_model, model_name)
         # torch.save(fcn_model.cpu().state_dict(), model_name)
         torch.save(fcn_model.module.state_dict(), model_name)
-        print("Epoch %d , time elapsed %.2f sec" % (epoch, time.time() - ts))
+        lr = optimizer.param_groups[0]['lr']
+        print("Epoch %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (epoch, loss.data, lr, time.time() - ts))
         if epoch % 10 == 0:
             net_name = os.path.join(model_path, "net_%03d.pth"%(epoch))
             copyfile(model_name, net_name)
