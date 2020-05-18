@@ -20,6 +20,8 @@ import sys
 import os
 import datetime
 from shutil import copyfile
+import math
+
 n_class    = 20
 
 batch_size = 6
@@ -30,14 +32,18 @@ w_decay    = 1e-5
 step_size  = 50
 gamma      = 0.5
 
-continueTrain = True
-if continueTrain:
-    epoch_count = 250 # opt.epoch_count
-    save_path = "/content/drive/My Drive/models/net-%s/net_%03d.pth" % ("200516-225630", epoch_count)
-else:
-    epoch_count = 0
 configs    = "FCNs-BCEWithLogits_batch{}_epoch{}_RMSprop_scheduler_step{}_gamma{}_lr{}_momentum{}_w_decay{}".format(batch_size, epochs, step_size, gamma, lr, momentum, w_decay)
 print("Configs:", configs)
+
+continueTrain = True
+if continueTrain:
+    # epoch_count = 250 # opt.epoch_count
+    epoch_count = 330 # TODO # opt.epoch_count
+    # save_path = "/content/drive/My Drive/models/net-%s/net_%03d.pth" % ("200516-225630", epoch_count)
+    save_path = "/content/drive/My Drive/models/net-%s/net_%03d.pth" % ("200517-233346", epoch_count)
+    lr *= math.pow(w_decay, int(epoch_count/30))
+else:
+    epoch_count = 0
 
 if sys.argv[1] == 'CamVid':
     root_dir   = "CamVid/"
@@ -50,6 +56,7 @@ val_file   = os.path.join(root_dir, "val.csv")
 model_dir = os.path.join(root_dir, "models")
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
+#TODO #if continueTrain:
 timeNow = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(seconds=28800)))
 model_folder = timeNow.strftime("net-%y%m%d-%H%M%S")
 model_path = os.path.join(model_dir, model_folder)
