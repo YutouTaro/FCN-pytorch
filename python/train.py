@@ -35,12 +35,13 @@ gamma      = 0.5
 configs    = "FCNs-BCEWithLogits_batch{}_epoch{}_RMSprop_scheduler_step{}_gamma{}_lr{}_momentum{}_w_decay{}".format(batch_size, epochs, step_size, gamma, lr, momentum, w_decay)
 print("Configs:", configs)
 
-continueTrain = True
-if continueTrain:
+continueTrain = False
+isTest = True
+if continueTrain or isTest:
     # epoch_count = 250 # opt.epoch_count
-    epoch_count = 440 # TODO # opt.epoch_count
+    epoch_count = 500 # TODO # opt.epoch_count
     # save_path = "/content/drive/My Drive/models/net-%s/net_%03d.pth" % ("200516-225630", epoch_count)
-    save_path = "/content/drive/My Drive/models/net-%s/net_%03d.pth" % ("200518-085428", epoch_count)
+    save_path = "/content/drive/My Drive/models/net-%s/net_%03d.pth" % ("200519-094259", epoch_count)
     lr *= math.pow(w_decay, int(epoch_count/30))
 else:
     epoch_count = 0
@@ -57,12 +58,13 @@ model_dir = os.path.join(root_dir, "models")
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
 #TODO #if continueTrain:
-timeNow = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(seconds=28800)))
-model_folder = timeNow.strftime("net-%y%m%d-%H%M%S")
-model_path = os.path.join(model_dir, model_folder)
-os.makedirs(model_path)
-with open( os.path.join(model_path, "config.txt"), "w" ) as fout:
-    fout.write(configs)
+if not isTest:
+    timeNow = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(seconds=28800)))
+    model_folder = timeNow.strftime("net-%y%m%d-%H%M%S")
+    model_path = os.path.join(model_dir, model_folder)
+    os.makedirs(model_path)
+    with open( os.path.join(model_path, "config.txt"), "w" ) as fout:
+        fout.write(configs)
 
 use_gpu = torch.cuda.is_available()
 num_gpu = list(range(torch.cuda.device_count()))
@@ -81,7 +83,7 @@ val_loader = DataLoader(val_data, batch_size=1, num_workers=8)
 
 vgg_model = VGGNet(requires_grad=True, remove_fc=True)
 fcn_model = FCNs(pretrained_net=vgg_model, n_class=n_class)
-if continueTrain:
+if continueTrain or isTest:
     fcn_model.load_state_dict(torch.load(save_path))
     print("loaded parameters from %s" % (save_path))
 
@@ -211,4 +213,7 @@ def pixel_acc(pred, target):
 
 if __name__ == "__main__":
     # val(0)  # show the accuracy before training
-    train()
+    if isTest:
+        val(epochs)
+    else:
+        train()
