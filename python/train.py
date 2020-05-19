@@ -38,9 +38,9 @@ print("Configs:", configs)
 continueTrain = True
 if continueTrain:
     # epoch_count = 250 # opt.epoch_count
-    epoch_count = 330 # TODO # opt.epoch_count
+    epoch_count = 440 # TODO # opt.epoch_count
     # save_path = "/content/drive/My Drive/models/net-%s/net_%03d.pth" % ("200516-225630", epoch_count)
-    save_path = "/content/drive/My Drive/models/net-%s/net_%03d.pth" % ("200517-233346", epoch_count)
+    save_path = "/content/drive/My Drive/models/net-%s/net_%03d.pth" % ("200518-085428", epoch_count)
     lr *= math.pow(w_decay, int(epoch_count/30))
 else:
     epoch_count = 0
