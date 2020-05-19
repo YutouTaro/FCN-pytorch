@@ -182,7 +182,7 @@ def val(epoch):
     ious = np.nanmean(total_ious, axis=1)
     pixel_accs = np.array(pixel_accs).mean()
     print("epoch{}, pix_acc: {}, meanIoU: {}, IoUs: {}".format(epoch, pixel_accs, np.nanmean(ious), ious))
-    IU_scores[epoch] = ious
+    IU_scores[epoch-1] = ious
     np.save(os.path.join(score_dir, "meanIU"), IU_scores)
     pixel_scores[epoch] = pixel_accs
     np.save(os.path.join(score_dir, "meanPixel"), pixel_scores)
