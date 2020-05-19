@@ -100,7 +100,8 @@ optimizer = optim.RMSprop(fcn_model.parameters(), lr=lr, momentum=momentum, weig
 scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)  # decay LR by a factor of 0.5 every 30 epochs
 
 # create dir for score
-score_dir = os.path.join("scores", configs)
+# score_dir = os.path.join("scores", configs)
+score_dir = os.path.join(model_dir, "scores")
 if not os.path.exists(score_dir):
     os.makedirs(score_dir)
 IU_scores    = np.zeros((epochs, n_class))
@@ -184,7 +185,7 @@ def val(epoch):
     print("epoch{}, pix_acc: {}, meanIoU: {}, IoUs: {}".format(epoch, pixel_accs, np.nanmean(ious), ious))
     IU_scores[epoch-1] = ious
     np.save(os.path.join(score_dir, "meanIU"), IU_scores)
-    pixel_scores[epoch] = pixel_accs
+    pixel_scores[epoch-1] = pixel_accs
     np.save(os.path.join(score_dir, "meanPixel"), pixel_scores)
 
 
