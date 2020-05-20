@@ -7,7 +7,8 @@ import os
 from os.path import join as pathjoin
 
 print("="*10 + "directories" + "="*10)
-dir_dataset = "D:\Google Drive (yutouttaro@gmail.com)\data_semantics"
+# dir_dataset = "D:\Google Drive (yutouttaro@gmail.com)\data_semantics"
+dir_dataset = "/content/drive/My Drive/data_semantics"
 
 # input directories
 dir_train      = pathjoin(dir_dataset, "training")
