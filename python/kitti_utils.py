@@ -44,7 +44,7 @@ for dir in output_dirs:
 path_train_list = pathjoin(dir_dataset, 'train.csv')
 # path_test_list = pathjoin(dir_dataset, 'test.csv')
 
-width, height = 1242, 375 # the size you want the image to be after conversion # TODO not used right now
+width, height = 1224, 370 # the size you want the image to be after conversion
 
 # Label = namedtuple('Label', ['name', 'id', 'trainId', 'category', 'categoryId', 'hasInstances', 'ignoreInEval', 'color'])
 # labels = [
@@ -111,8 +111,8 @@ for imgN in imageNames:
     print(imgN)
     if not os.path.exists(path_imgBW):
         imgBW = Image.open(pathjoin(dir_trainImg,imgN)).convert('LA')
-        # if not imgBW.size == (width, height):
-        #     imgBW = imgBW.resize((width, height), Image.NEAREST)
+        if not imgBW.size == (width, height):
+            imgBW = imgBW.resize((width, height), Image.NEAREST)
         if option.calculate_mean:
             imgmat = np.array(imgBW).astype(np.uint8)[:,:,0]
             pixelSum += imgmat.sum()
