@@ -42,7 +42,7 @@ class kittiDataset(Dataset):
         label_name = self.data.iloc[idx,1]
         # label = np.load(label_name) # old format, read .npy file which converted in kitti_utils
         imglabel = Image.open(label_name)
-        label = np.array(imglabel).astype(np.uint8)[:,:,0]
+        label = np.array(imglabel).astype(np.uint8)
         assert img.shape == label.shape
 
         if self.crop:
