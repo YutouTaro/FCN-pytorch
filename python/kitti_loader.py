@@ -16,7 +16,7 @@ from torchvision import utils
 # import imageio
 from PIL import Image
 
-means = np.array([99.703])
+means = np.array([99.703])/255.
 
 class kittiDataset(Dataset):
     def __init__(self, option, csv_file, isTrain, n_class=34):
@@ -57,8 +57,8 @@ class kittiDataset(Dataset):
             label = np.fliplr(label)
 
         # reduce mean
-        img -= means[0]
         img /= 255.
+        img -= means[0]
 
         # convert to tensor
         img = torch.from_numpy(img.copy()).float()
