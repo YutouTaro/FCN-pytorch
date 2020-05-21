@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
     option = parser.parse_args()
     dir_root = option.dir_dataset
-    path_train_file = os.path.jion(dir_root, 'train.csv')
+    path_train_file = os.path.join(dir_root, 'train.csv')
     train_data = kittiDataset(option=option, csv_file=path_train_file, isTrain=True)
 
     # show a batch
