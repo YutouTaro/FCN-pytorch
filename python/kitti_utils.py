@@ -105,6 +105,11 @@ for imgN in imageNames:
     if not os.path.exists(path_label):
         print("%s does not exist" % (path_label))
         continue
+    else:
+        imglabel = Image.open(path_label)
+        if not imglabel.size == (width, height):
+            imglabel = imglabel.resize((width, height), Image.NEAREST)
+        imglabel.save(path_label)
 
     # convert rgb img to grayscale
     path_imgBW = pathjoin(dir_trainImgBW, imgN)
