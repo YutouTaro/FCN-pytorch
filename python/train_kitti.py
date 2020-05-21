@@ -37,8 +37,8 @@ parser.add_argument('--gamma'    , type=float, default=0.5 , help='gamma')
 
 parser.add_argument('--isCrop'        , action='store_true', default=False, help='crop the image?')
 parser.add_argument('--flip_rate'     , type=float         , default=0.5  , help='flip rate')
-parser.add_argument('--new_height'    , type=int           , default=375  , help='height after crop')
-parser.add_argument('--new_width'     , type=int           , default=1242 , help='width after crop')
+parser.add_argument('--new_height'    , type=int           , default=370  , help='height after crop')
+parser.add_argument('--new_width'     , type=int           , default=1224 , help='width after crop')
 
 parser.add_argument('--continue_train', action='store_true', default=False, help='[train]is continue training by loading a model parameter?')
 parser.add_argument('--which_folder'  , type=str           , default=''   , help='the folder to load the parameter for test/continue train')
