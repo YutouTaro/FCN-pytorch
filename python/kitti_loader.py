@@ -88,8 +88,35 @@ def show_batch(batch):
 
 
 if __name__ == "__main__":
-    path_train_file = r'D:\Google Drive (yutouttaro@gmail.com)\data_semantics\train.csv'
-    train_data = kittiDataset(csv_file=path_train_file, isTrain=True)
+    import argparse
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    # parser.add_argument('--dataset', type=str, default='kitti', choices=['kitti', 'camvid', 'cityscape'], help='name of the dataset')
+    parser.add_argument('--dir_dataset', '-d', type=str, required=True,
+                        help='directory to the dataset, the last folder should be data_semantics')
+    parser.add_argument('--batchsize', type=int, default=6, help='input batch size')
+    parser.add_argument('--epochs', type=int, default=500, help='number of epochs to train')
+    parser.add_argument('--lr', type=float, default=1e-4, help='learning rate')
+    parser.add_argument('--momentum', type=float, default=0, help='momentum')
+    parser.add_argument('--w_decay', type=float, default=1e-5, help='weight decay')
+    parser.add_argument('--step_size', type=int, default=50, help='step size')
+    parser.add_argument('--gamma', type=float, default=0.5, help='gamma')
+
+    parser.add_argument('--isCrop', action='store_true', default=False, help='crop the image?')
+    parser.add_argument('--flip_rate', type=float, default=0.5, help='flip rate')
+    parser.add_argument('--new_height', type=int, default=375, help='height after crop')
+    parser.add_argument('--new_width', type=int, default=1242, help='width after crop')
+
+    parser.add_argument('--continue_train', action='store_true', default=False,
+                        help='[train]is continue training by loading a model parameter?')
+    parser.add_argument('--which_folder', type=str, default='',
+                        help='the folder to load the parameter for test/continue train')
+    parser.add_argument('--which_epoch', type=int, default=0, help='the epoch to load for test/continue training')
+    parser.add_argument('--isTest', action='store_true', default=False, help='is test?')
+
+    option = parser.parse_args()
+    dir_root = option.dir_dataset
+    path_train_file = os.path.jion(dir_root, 'train.csv')
+    train_data = kittiDataset(option=option, csv_file=path_train_file, isTrain=True)
 
     # show a batch
     batch_size = 4
