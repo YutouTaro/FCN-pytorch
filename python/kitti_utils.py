@@ -5,11 +5,18 @@ import numpy as np
 from PIL import Image
 import os
 from os.path import join as pathjoin
+import argparse
+
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('--dir_dataset','-d', type=str, required=True, help='directory to the dataset, the last folder '
+                                                                        'should be data_semantics')
+parser.add_argument('--calculate_mean', action='store_true', default=False, help='calculate the mean value of the images')
+option = parser.parse_args()
 
 print("="*10 + "directories" + "="*10)
 # dir_dataset = "D:\Google Drive (yutouttaro@gmail.com)\data_semantics"
-dir_dataset = "/content/drive/My Drive/data_semantics"
-
+# dir_dataset = "/content/drive/My Drive/data_semantics"
+dir_dataset = option.dir_dataset
 # input directories
 dir_train      = pathjoin(dir_dataset, "training")
 dir_trainLabel = pathjoin(dir_train, "semantic")              # dir to semantic labels (INDEX, not color)
@@ -79,12 +86,16 @@ width, height = 1242, 375 # the size you want the image to be after conversion #
 #     Label(  'license plate'        , -1 ,       -1 , 'vehicle'         , 7       , False        , True         , (  0,  0,142) ),
 # ]
 
-### training images, (1)link to label .png file, (2)create .npy file and (3)convert to grayscale image
+print("train folder")
+### training images, (1)link to .png file of labels, (2)convert to grayscale image
+# not any more [(3)create .npy file]
 fout = open(path_train_list, 'w')
 fout.write("img,label\n")
 imageNames = os.listdir(dir_trainImg)
 imageNames.sort()
 fileCount = 0
+pixelSum = 0
+pixelNum = 0
 for imgN in imageNames:
     if '.png' not in imgN:
         continue
@@ -97,26 +108,39 @@ for imgN in imageNames:
 
     # convert rgb img to grayscale
     path_imgBW = pathjoin(dir_trainImgBW, imgN)
+    print(imgN)
     if not os.path.exists(path_imgBW):
         imgBW = Image.open(pathjoin(dir_trainImg,imgN)).convert('LA')
         # if not imgBW.size == (width, height):
         #     imgBW = imgBW.resize((width, height), Image.NEAREST)
+        if option.calculate_mean:
+            imgmat = np.array(imgBW).astype(np.uint8)[:,:,0]
+            pixelSum += imgmat.sum()
+            pixelNum += imgmat.size
         imgBW.save(path_imgBW)
+    elif option.calculate_mean:
+        imgBW = Image.open(path_imgBW)
+        imgmat = np.array(imgBW).astype(np.uint8)[:, :, 0]
+        pixelSum += imgmat.sum()
+        pixelNum += imgmat.size
 
     # create .npy file
-    path_label_npy = pathjoin(dir_trainIdx, imgN)
-    path_label_npy = path_label_npy.split('.png')[0] + '.npy'
-    if not os.path.exists(path_label_npy):
-        imgIdx = Image.open(path_label)
-        idx_mat = np.array(imgIdx).astype(np.uint8)
-        np.save(path_label_npy, idx_mat)
+    # path_label_npy = pathjoin(dir_trainIdx, imgN)
+    # path_label_npy = path_label_npy.split('.png')[0] + '.npy'
+    # if not os.path.exists(path_label_npy):
+        # imgIdx = Image.open(path_label)
+        # idx_mat = np.array(imgIdx).astype(np.uint8)
+        # np.save(path_label_npy, idx_mat)
     # .npy file is much larger than .png file
-    # TODO modify the loader in the future to directly read .png file for labeling
-    # TODO and change the content in the csv file
-    fout.write("%s,%s\n"%(path_imgBW, path_label_npy ))
+    # modify the loader in the future to directly read .png file for labeling
+    # and change the content in the csv file
+    # fout.write("%s,%s\n"%(path_imgBW, path_label_npy ))
+    fout.write("%s,%s\n"%(path_imgBW, path_label ))
     fileCount += 1
 fout.close()
 print("%d valid file sets found, written in file %s" % (fileCount, path_train_list))
+if option.calculate_mean:
+    print("pixel mean value = %.3f" % (pixelSum/pixelNum))
 
 ### testing images, only convert to grayscale as no labels available
 # fout = open(path_test_list, 'w')
