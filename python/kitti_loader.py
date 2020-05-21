@@ -82,8 +82,8 @@ def show_batch(batch):
     batch_size = len(img_batch)
 
     grid = utils.make_grid(img_batch)
-    plt.imshow(grid.numpy()[::-1].transpose((1, 2, 0)))
-    plt.imshow(grid.numpy()[::-1])
+    # plt.imshow(grid.numpy()[::-1].transpose((1, 2, 0)))
+    plt.imshow(grid.numpy()[::-1][0:,:,:])
     plt.title('Batch from dataloader')
 
 
