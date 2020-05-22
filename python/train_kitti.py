@@ -103,7 +103,7 @@ train_loader = DataLoader(train_data, batch_size=option.batch_size, shuffle=True
 vgg_model = VGGNet(requires_grad=True, remove_fc=True)
 fcn_model = FCNs(pretrained_net=vgg_model, n_class=n_class)
 
-if option.isTest or option.continueTrain:
+if option.isTest or option.continue_train:
     fcn_model.load_state_dict(torch.load(save_path))
     print("loaded parameters from %s" % (save_path))
 
