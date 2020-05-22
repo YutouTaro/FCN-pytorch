@@ -126,3 +126,45 @@ if not os.path.exists(dir_score):
     os.makedirs(dir_score)
 IU_scores    = np.zeros((option.epochs, n_class))
 pixel_scores = np.zeros(option.epochs)
+
+def train():
+    for epoch in range(epoch_count+1, option.epochs):
+        timestart_epoch = time.time()
+        timestart_iters = time.time()
+        for iter, batch in enumerate(train_loader):
+            optimizer.zero_grad()
+            if use_gpu:
+                inputs = Variable(batch['X']).to(device)
+                labels = Variable(batch['Y']).to(device)
+            else:
+                inputs, labels = Variable(batch['X']), Variable(batch['Y'])
+
+            outputs = fcn_model(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+            if iter % 10 == 1:
+                lr = optimizer.param_groups[0]['lr']
+                print("\tepoch: %d, iter %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (
+                epoch, iter, loss.data, lr, time.time() - timeTrain))
+                timeTrain = time.time()
+
+        scheduler.step()
+
+        model_name = pathjion(dir_model, "net_latest.pth")
+        torch.save(fcn_model.module.state_dict(), model_name)
+        lr = optimizer.param_groups[0]['lr']
+        print("Epoch %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (epoch, loss.data, lr, time.time() - ts))
+        if epoch % 10 == 1:
+            net_name = pathjion(dir_model, "net_%03d.pth"%(epoch))
+            copyfile(model_name, net_name)
+
+
+
+
+if __name__ == "__main__":
+    if option.isTest:
+        print("test module is still on progress")
+    else:
+        train()
