@@ -100,7 +100,7 @@ train_data = kittiDataset(option= option, csv_file=path_train_file, isTrain = Tr
 
 train_loader = DataLoader(train_data, batch_size=option.batch_size, shuffle=True, num_workers=8)
 
-vgg_model = VGGNet(required_grad=True, remove_fc=True)
+vgg_model = VGGNet(requires_grad=True, remove_fc=True)
 fcn_model = FCNs(pretrained_net=vgg_model, n_class=n_class)
 
 if option.isTest or option.continueTrain:
