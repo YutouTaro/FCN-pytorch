@@ -97,4 +97,32 @@ num_gpu = list(range(torch.cuda.device_count()))
 
 # TODO select models from option
 train_data = kittiDataset(option= option, csv_file=path_train_file, isTrain = True, n_class=n_class)
+
 train_loader = DataLoader(train_data, batch_size=option.batch_size, shuffle=True, num_workers=8)
+
+vgg_model = VGGNet(required_grad=True, remove_fc=True)
+fcn_model = FCNs(pretrained_net=vgg_model, n_class=n_class)
+
+if option.isTest or option.continueTrain:
+    fcn_model.load_state_dict(torch.load(save_path))
+    print("loaded parameters from %s" % (save_path))
+
+if use_gpu:
+    ts = time.time()
+    vgg_model = vgg_model.cuda()
+    fcn_model = fcn_model.cuda()
+    fcn_model = nn.DataParallel(fcn_model, device_ids=num_gpu)
+    print("Finish cuda loading in %.1f sec" % (time.time() - ts))
+    device = torch.device("cuda:0")
+
+criterion = nn.BCEWithLogitsLoss()
+optimizer = optim.RMSprop(fcn_model.parameters(), lr=option.lr, momentum=option.momentum, weight_decay=option.w_decay)
+scheduler = lr_scheduler.StepLR(optimizer, step_size=option.step_size, gamma=option.gamma)
+
+# create dir for score
+# score_dir = os.path.join("scores", configs)
+dir_score = os.path.join(dir_model, "scores")
+if not os.path.exists(dir_score):
+    os.makedirs(dir_score)
+IU_scores    = np.zeros((option.epochs, n_class))
+pixel_scores = np.zeros(option.epochs)
