@@ -26,7 +26,7 @@ n_class    = 34
 parser =argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 # parser.add_argument('--dataset', type=str, default='kitti', choices=['kitti', 'camvid', 'cityscape'], help='name of the dataset')
 parser.add_argument('--dir_dataset', '-d', type=str, required=True, help='directory to the dataset, the last folder should be data_semantics')
-parser.add_argument('--batchsize', type=int  , default=6   , help='input batch size')
+parser.add_argument('--batch_size', type=int  , default=6   , help='input batch size')
 parser.add_argument('--epochs'   , type=int  , default=500 , help='number of epochs to train')
 parser.add_argument('--lr'       , type=float, default=1e-4, help='learning rate')
 parser.add_argument('--momentum' , type=float, default=0   , help='momentum')
