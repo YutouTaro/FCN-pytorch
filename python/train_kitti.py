@@ -97,3 +97,4 @@ num_gpu = list(range(torch.cuda.device_count()))
 
 # TODO select models from option
 train_data = kittiDataset(option= option, csv_file=path_train_file, isTrain = True, n_class=n_class)
+train_loader = DataLoader(train_data, batch_size=option.batch_size, shuffle=True, num_workers=8)
