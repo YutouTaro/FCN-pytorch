@@ -51,31 +51,6 @@ option = parser.parse_args()
 # configs    = "FCNs-BCEWithLogits\nbatch size: {}\nepoch: {}\nRMSprop scheduler step size: {}\ngamma: {}\nlearn rate: {}\nmomentum: {}\nw_decay: {}".format(
 #     option.batchsize, option.epochs, option.step_size, option.gamma, option.lr, option.momentum, option.w_decay)
 # print("Configs:", configs)
-
-if option.continue_train and option.isTest: # cannot be True at the same time
-    print("error with the train/test config!")
-    quit()
-
-if option.continue_train or option.isTest:
-    # TODO get the configs as input
-    epoch_count = 500
-    save_path = "/content/drive/My Drive/models/net-%s/net_%03d.pth" % ("200519-094259", epoch_count)
-    option.lr *= math.pow(option.w_decay, int(epoch_count/50))
-else:
-    epoch_count = 0
-
-if option.model == 'fcns':
-    model = FCNs
-elif option.model == 'fcn8s':
-    model = FCN8s
-elif option.model == 'fcn16s':
-    model = FCN16s
-elif option.model == 'fcn32s':
-    model = FCN32s
-else:
-    print("input model name does not recognised!")
-    quit()
-
 dir_root = option.dir_dataset
 path_train_file = pathjion(dir_root, 'train.csv')
 #create dir for saving model parameters later on
@@ -92,6 +67,32 @@ else: # create a new folder to save
     model_folder = timeNow.strftime("net-%y%m%d-%H%M%S")
     dir_model = pathjion(dir_model, model_folder)
     os.makedirs(dir_model)
+
+if option.continue_train and option.isTest: # cannot be True at the same time
+    print("error with the train/test config!")
+    quit()
+
+if option.continue_train or option.isTest:
+    # TODO get the configs as input
+    epoch_count = 500
+    save_path = pathjion(dir_root, "models", "net-%s"%(option.which_folder), "net_%03d.pth"%(epoch_count) )
+    # save_path = "%s/models/net-%s/net_%03d.pth" % (dir_root, option.which_folder, epoch_count)
+    option.lr *= math.pow(option.w_decay, int(epoch_count/50))
+else:
+    epoch_count = 0
+
+if option.model == 'fcns':
+    model = FCNs
+elif option.model == 'fcn8s':
+    model = FCN8s
+elif option.model == 'fcn16s':
+    model = FCN16s
+elif option.model == 'fcn32s':
+    model = FCN32s
+else:
+    print("input model name does not recognised!")
+    quit()
+
 
 # save the config file
 print('='*20)
@@ -111,9 +112,11 @@ if use_gpu:
     print("cuda detected: {}".format(num_gpu))
 
 # TODO select models from option
-train_data = kittiDataset(option= option, csv_file=path_train_file, isTrain = True, n_class=n_class)
+train_data = kittiDataset(option= option, csv_file=path_train_file, isTrain=True, n_class=n_class)
+test_data   = kittiDataset(option= option, csv_file=path_test_file, isTrain=False)
 
 train_loader = DataLoader(train_data, batch_size=option.batch_size, shuffle=True, num_workers=8)
+test_loader = DataLoader(test_data, batch_size=1, num_workers=8)
 
 vgg_model = VGGNet(requires_grad=True, remove_fc=True)
 fcn_model = model(pretrained_net=vgg_model, n_class=n_class)
@@ -175,7 +178,62 @@ def train():
             net_name = pathjion(dir_model, "net_%03d.pth"%(epoch))
             copyfile(model_name, net_name)
 
+def val(epoch):
+    fcn_model.eval()
+    total_ious = []
+    pixel_accs = []
+    for iter, batch in enumerate(val_loader):
+        timeIter = time.time()
+        if use_gpu:
+            inputs = Variable(batch['X'].cuda())
+        else:
+            inputs = Variable(batch['X'])
 
+        output = fcn_model(inputs)
+        output = output.data.cpu().numpy()
+
+        N, _, h, w = output.shape
+        pred = output.transpose(0, 2, 3, 1).reshape(-1, n_class).argmax(axis=1).reshape(N, h, w)
+
+        target = batch['l'].cpu().numpy().reshape(N, h, w)
+        for p, t in zip(pred, target):
+            total_ious.append(iou(p, t))
+            pixel_accs.append(pixel_acc(p, t))
+
+        print("\tepoch: %d, iter: %d, %.2f sec" % (epoch, iter, time.time()-timeIter))
+
+    # Calculate average IoU
+    total_ious = np.array(total_ious).T  # n_class * val_len
+    ious = np.nanmean(total_ious, axis=1)
+    pixel_accs = np.array(pixel_accs).mean()
+    print("epoch{}, pix_acc: {}, meanIoU: {}, IoUs: {}".format(epoch, pixel_accs, np.nanmean(ious), ious))
+    IU_scores[epoch-1] = ious
+    np.save(os.path.join(score_dir, "meanIU"), IU_scores)
+    pixel_scores[epoch-1] = pixel_accs
+    np.save(os.path.join(score_dir, "meanPixel"), pixel_scores)
+
+
+# borrow functions and modify it from https://github.com/Kaixhin/FCN-semantic-segmentation/blob/master/main.py
+# Calculates class intersections over unions
+def iou(pred, target):
+    ious = []
+    for cls in range(n_class):
+        pred_inds = pred == cls
+        target_inds = target == cls
+        intersection = pred_inds[target_inds].sum()
+        union = pred_inds.sum() + target_inds.sum() - intersection
+        if union == 0:
+            ious.append(float('nan'))  # if there is no ground truth, do not include in evaluation
+        else:
+            ious.append(float(intersection) / max(union, 1))
+        # print("cls", cls, pred_inds.sum(), target_inds.sum(), intersection, float(intersection) / max(union, 1))
+    return ious
+
+
+def pixel_acc(pred, target):
+    correct = (pred == target).sum()
+    total   = (target == target).sum()
+    return correct / total
 
 
 if __name__ == "__main__":
