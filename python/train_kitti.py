@@ -60,7 +60,7 @@ if option.continue_train or option.isTest:
     # TODO get the configs as input
     epoch_count = 500
     save_path = "/content/drive/My Drive/models/net-%s/net_%03d.pth" % ("200519-094259", epoch_count)
-    option.lr *= math.pow(option.w_decay, int(epoch_count/30))
+    option.lr *= math.pow(option.w_decay, int(epoch_count/50))
 else:
     epoch_count = 0
 
