@@ -23,6 +23,7 @@ class kittiDataset(Dataset):
         self.data = pd.read_csv(csv_file)
         self.means = means
         self.n_class = n_class
+        # self.isTrain = isTrain
 
         if isTrain:
             self.crop = option.isCrop
@@ -39,22 +40,25 @@ class kittiDataset(Dataset):
         img_name = self.data.iloc[idx,0]
         img = Image.open(img_name)
         img = np.array(img).astype(np.float32)[:,:,0]
-        label_name = self.data.iloc[idx,1]
-        # label = np.load(label_name) # old format, read .npy file which converted in kitti_utils
-        imglabel = Image.open(label_name)
-        label = np.array(imglabel).astype(np.uint8)
-        assert img.shape == label.shape
+        if self.isTrain:
+            label_name = self.data.iloc[idx,1]
+            # label = np.load(label_name) # old format, read .npy file which converted in kitti_utils
+            imglabel = Image.open(label_name)
+            label = np.array(imglabel).astype(np.uint8)
+            assert img.shape == label.shape
 
         if self.crop:
             h, w  = img.size
             top   = random.randint(0, h-self.new_h)
             left  = random.randint(0, w-self.new_w)
             img   = img[top:top + self.new_h, left:left + self.new_w]
-            label = label[top:top + self.new_h, left:left + self.new_w]
+            if self.isTrain:
+                label = label[top:top + self.new_h, left:left + self.new_w]
 
         if random.random() < self.flip_rate:
             img = np.fliplr(img)
-            label = np.fliplr(label)
+            if self.isTrain:
+                label = np.fliplr(label)
 
         # reduce mean
         img -= means[0]
@@ -64,15 +68,19 @@ class kittiDataset(Dataset):
 
         # convert to tensor
         img = torch.from_numpy(img.copy()).float()
-        label = torch.from_numpy(label.copy()).long()
+        if self.isTrain:
+            label = torch.from_numpy(label.copy()).long()
 
         # create one-hot encoding
-        h, w = label.size()
-        target = torch.zeros(self.n_class, h, w)
-        for c in range(self.n_class):
-            target[c][label == c] = 1
+        if self.isTrain:
+            h, w = label.size()
+            target = torch.zeros(self.n_class, h, w)
+            for c in range(self.n_class):
+                target[c][label == c] = 1
 
-        sample = {'X': img, 'Y': target, 'l': label}
+            sample = {'X': img, 'Y': target, 'l': label}
+        else:
+            sample = {'X': img}
 
         return sample
 
@@ -121,16 +129,20 @@ if __name__ == "__main__":
 
     option = parser.parse_args()
     dir_root = option.dir_dataset
-    path_train_file = os.path.join(dir_root, 'train.csv')
-    train_data = kittiDataset(option=option, csv_file=path_train_file, isTrain=True)
+    # path_train_file = os.path.join(dir_root, 'train.csv')
+    # train_data = kittiDataset(option=option, csv_file=path_train_file, isTrain=True)
+    path_test_file = os.path.join(dir_root, 'test.csv')
+    test_data = kittiDataset(option=option, csv_file=path_test_file, isTrain=True)
 
     # show a batch
     batch_size = 4
     for i in range(batch_size):
-        sample = train_data[i]
+        # sample = train_data[i]
+        sample = test_data[i]
         print(i, sample['X'].size(), sample['Y'].size())
 
-    dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=False, num_workers=4)
+    # dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=False, num_workers=4)
+    dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=4)
 
     for i, batch in enumerate(dataloader):
         print(i, batch['X'].size(), batch['Y'].size())
