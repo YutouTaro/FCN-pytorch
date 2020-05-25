@@ -39,8 +39,8 @@ dir_trainImgBW = pathjoin(dir_train, "image_0")               # dir to save gray
 # dir_trainIdx   = pathjoin(dir_train, "label_idx")             # dir to save labeled index
 
 dir_testImgBW  = pathjoin(dir_dataset, "testing", "image_0")  # dir to save grayscale images
-
-output_dirs = [dir_trainImgBW, dir_testImgBW]
+dir_labelnew = pathjoin(dir_dataset, "train", "semantic0")
+output_dirs = [dir_trainImgBW, dir_testImgBW, dir_labelnew]
 # create the directories if not exist
 for dir in output_dirs:
     if not os.path.exists(dir):
@@ -110,13 +110,15 @@ for imgN in imageNames:
     if not os.path.exists(path_label):
         print("%s does not exist" % (path_label))
         continue
-    elif option.resize:
-        imglabel = Image.open(path_label)
-        if not imglabel.size == (width, height):
-            imglabel = imglabel.resize((width, height), Image.NEAREST)
-            print(" resized", end="")
-        imglabel.save(path_label)
-        print(" label saved")
+    else:
+        path_label_new = path_label.replace("semantic", "semantic0")
+        if option.resize or not os.path.exists(path_label_new):
+            imglabel = Image.open(path_label)
+            if not imglabel.size == (width, height):
+                imglabel = imglabel.resize((width, height), Image.NEAREST)
+                print(" resized", end="")
+            imglabel.save(path_label_new)
+            print(" label saved")
 
 
     # convert rgb img to grayscale
@@ -149,7 +151,7 @@ for imgN in imageNames:
     # modify the loader in the future to directly read .png file for labeling
     # and change the content in the csv file
     # fout.write("%s,%s\n"%(path_imgBW, path_label_npy ))
-    fout.write("%s,%s\n"%(path_imgBW, path_label ))
+    fout.write("%s,%s\n"%(path_imgBW, path_label_new ))
     fileCount += 1
 fout.close()
 print("%d valid file sets found, written in file %s" % (fileCount, path_train_list))
