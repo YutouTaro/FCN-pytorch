@@ -59,6 +59,8 @@ class kittiDataset(Dataset):
         # reduce mean
         img -= means[0]
         img /= 255.
+        img = img[np.newaxis, ...]
+        # img = np.stack((img, img, img))
 
         # convert to tensor
         img = torch.from_numpy(img.copy()).float()
@@ -76,16 +78,17 @@ class kittiDataset(Dataset):
 
 def show_batch(batch):
     img_batch = batch['X']
-    img_batch[:,0,...].add_(means[0])
+    img_batch[:,0,...].add_(means[0]/255.)
     # img_batch[:,1,...].add_(means[1])
     # img_batch[:,2,...].add_(means[2])
     batch_size = len(img_batch)
 
     grid = utils.make_grid(img_batch)
     # plt.imshow(grid.numpy()[::-1].transpose((1, 2, 0)))
-    gridnp = grid.numpy()[::-1]
-    b,h,w = gridnp.size
-    gridnp = gridnp.reshape((b,1,h,w))
+    gridnp = grid.numpy()[::-1].transpose((1, 2, 0))
+    # gridnp = gridnp[:,:,0]
+    # b,h,w = gridnp.size
+    # gridnp = gridnp.reshape((b,1,h,w))
     plt.imshow(gridnp)
     plt.title('Batch from dataloader')
 
