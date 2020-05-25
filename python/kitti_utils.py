@@ -10,7 +10,9 @@ import argparse
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--dir_dataset','-d', type=str, required=True, help='directory to the dataset, the last folder '
                                                                         'should be data_semantics')
-parser.add_argument('--calculate_mean', action='store_true', default=False, help='calculate the mean value of the images')
+parser.add_argument('--calculate_mean'  , action='store_true', default=False, help='calculate the mean value of the images')
+# TODO change from boolean to self input size
+parser.add_argument('--resize'          , action='store_true', default=False, help='reshape the images and labels to predefined size')
 option = parser.parse_args()
 
 print("="*10 + "directories" + "="*10)
@@ -44,7 +46,7 @@ for dir in output_dirs:
 path_train_list = pathjoin(dir_dataset, 'train.csv')
 # path_test_list = pathjoin(dir_dataset, 'test.csv')
 
-width, height = 1224, 370 # the size you want the image to be after conversion
+width, height = 1216, 352 # the size you want the image to be after conversion
 
 # Label = namedtuple('Label', ['name', 'id', 'trainId', 'category', 'categoryId', 'hasInstances', 'ignoreInEval', 'color'])
 # labels = [
@@ -87,7 +89,7 @@ width, height = 1224, 370 # the size you want the image to be after conversion
 # ]
 
 print("train folder")
-### training images, (1)link to .png file of labels, (2)convert to grayscale image
+### training images, (1)link to .png file of labels, (2)convert to grayscale image (3) resize the image if --resize in input args
 # not any more [(3)create .npy file]
 fout = open(path_train_list, 'w')
 fout.write("img,label\n")
@@ -99,30 +101,35 @@ pixelNum = 0
 for imgN in imageNames:
     if '.png' not in imgN:
         continue
+    print(imgN)
 
     # checking label exsits
     path_label = pathjoin(dir_trainLabel, imgN) # label name
     if not os.path.exists(path_label):
         print("%s does not exist" % (path_label))
         continue
-    # else:
-    #     imglabel = Image.open(path_label)
-    #     if not imglabel.size == (width, height):
-    #         imglabel = imglabel.resize((width, height), Image.NEAREST)
-    #     imglabel.save(path_label)
+    elif option.resize:
+        imglabel = Image.open(path_label)
+        if not imglabel.size == (width, height):
+            imglabel = imglabel.resize((width, height), Image.NEAREST)
+            print(" resized", end="")
+        imglabel.save(path_label)
+        print(" label saved")
+
 
     # convert rgb img to grayscale
     path_imgBW = pathjoin(dir_trainImgBW, imgN)
-    print(imgN)
-    if not os.path.exists(path_imgBW):
+    if option.resize or not os.path.exists(path_imgBW):
         imgBW = Image.open(pathjoin(dir_trainImg,imgN)).convert('LA')
         if not imgBW.size == (width, height):
             imgBW = imgBW.resize((width, height), Image.NEAREST)
+            print(" resized", end="")
         if option.calculate_mean:
             imgmat = np.array(imgBW).astype(np.uint8)[:,:,0]
             pixelSum += imgmat.sum()
             pixelNum += imgmat.size
         imgBW.save(path_imgBW)
+        print(" image saved")
     elif option.calculate_mean:
         imgBW = Image.open(path_imgBW)
         imgmat = np.array(imgBW).astype(np.uint8)[:, :, 0]
@@ -133,9 +140,9 @@ for imgN in imageNames:
     # path_label_npy = pathjoin(dir_trainIdx, imgN)
     # path_label_npy = path_label_npy.split('.png')[0] + '.npy'
     # if not os.path.exists(path_label_npy):
-        # imgIdx = Image.open(path_label)
-        # idx_mat = np.array(imgIdx).astype(np.uint8)
-        # np.save(path_label_npy, idx_mat)
+    # imgIdx = Image.open(path_label)
+    # idx_mat = np.array(imgIdx).astype(np.uint8)
+    # np.save(path_label_npy, idx_mat)
     # .npy file is much larger than .png file
     # modify the loader in the future to directly read .png file for labeling
     # and change the content in the csv file
