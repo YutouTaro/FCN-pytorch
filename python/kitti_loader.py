@@ -23,7 +23,7 @@ class kittiDataset(Dataset):
         self.data = pd.read_csv(csv_file)
         self.means = means
         self.n_class = n_class
-        # self.isTrain = isTrain
+        self.isTrain = isTrain
 
         if isTrain:
             self.crop = option.isCrop
@@ -31,7 +31,7 @@ class kittiDataset(Dataset):
             self.new_h = option.new_height
             self.new_w = option.new_width
         else:
-            # self.crop = crop
+            self.crop = False
             self.flip_rate = option.flip_rate
     def __len__(self):
         return len(self.data)
@@ -129,24 +129,34 @@ if __name__ == "__main__":
 
     option = parser.parse_args()
     dir_root = option.dir_dataset
-    # path_train_file = os.path.join(dir_root, 'train.csv')
-    # train_data = kittiDataset(option=option, csv_file=path_train_file, isTrain=True)
-    path_test_file = os.path.join(dir_root, 'test.csv')
-    test_data = kittiDataset(option=option, csv_file=path_test_file, isTrain=True)
+    isTrain = not option.isTest
+    if isTrain:
+        path_train_file = os.path.join(dir_root, 'train.csv')
+        train_data = kittiDataset(option=option, csv_file=path_train_file, isTrain=True)
+    else:
+        path_test_file = os.path.join(dir_root, 'test.csv')
+        test_data = kittiDataset(option=option, csv_file=path_test_file, isTrain=isTrain)
 
     # show a batch
     batch_size = 4
     for i in range(batch_size):
-        # sample = train_data[i]
-        sample = test_data[i]
-        print(i, sample['X'].size(), sample['Y'].size())
+        if isTrain:
+            sample = train_data[i]
+            print(i, sample['X'].size(), sample['Y'].size())
+        else:
+            sample = test_data[i]
+            print(i, sample['X'].size())
 
-    # dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=False, num_workers=4)
-    dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=4)
+    if isTrain:
+        dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=False, num_workers=4)
+    else:
+        dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=4)
 
     for i, batch in enumerate(dataloader):
-        print(i, batch['X'].size(), batch['Y'].size())
-
+        if isTrain:
+            print(i, batch['X'].size(), batch['Y'].size())
+        else:
+            print(i, batch['X'].size())
         # observe 4th batch
         if i == 3:
             plt.figure()
