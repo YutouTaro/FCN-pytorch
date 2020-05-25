@@ -17,7 +17,7 @@ option = parser.parse_args()
 
 print("="*10 + "directories" + "="*10)
 # width, height = 1216, 352 # the size you want the image to be after conversion
-width, height = 512, 144 # the size you want the image to be after conversion
+width, height = 512, 160 # the size you want the image to be after conversion
 if option.resize:
     print("images and labels will be resized to (w, h)=(%d, %d)" %(width, height))
 # dir_dataset = "D:\Google Drive (yutouttaro@gmail.com)\data_semantics"
