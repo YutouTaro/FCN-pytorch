@@ -39,7 +39,7 @@ dir_trainImgBW = pathjoin(dir_train, "image_0")               # dir to save gray
 # dir_trainIdx   = pathjoin(dir_train, "label_idx")             # dir to save labeled index
 
 dir_testImgBW  = pathjoin(dir_dataset, "testing", "image_0")  # dir to save grayscale images
-dir_labelnew = pathjoin(dir_dataset, "train", "semantic0")
+dir_labelnew = pathjoin(dir_dataset, "training", "semantic0")
 output_dirs = [dir_trainImgBW, dir_testImgBW, dir_labelnew]
 # create the directories if not exist
 for dir in output_dirs:
