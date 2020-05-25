@@ -159,7 +159,7 @@ def train():
             loss.backward()
             optimizer.step()
 
-            if iter % 10 == 1:
+            if iter % 10 == 0:
                 lr = optimizer.param_groups[0]['lr']
                 print("\tepoch: %d, iter %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (
                 epoch, iter, loss.data, lr, time.time() - timestart_iters))
