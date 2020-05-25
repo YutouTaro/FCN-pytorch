@@ -16,6 +16,9 @@ parser.add_argument('--resize'          , action='store_true', default=False, he
 option = parser.parse_args()
 
 print("="*10 + "directories" + "="*10)
+width, height = 1216, 352 # the size you want the image to be after conversion
+if option.resize:
+    print("images and labels will be resized to (w, h)=(%d, %d)" %(width, height))
 # dir_dataset = "D:\Google Drive (yutouttaro@gmail.com)\data_semantics"
 # dir_dataset = "/content/drive/My Drive/data_semantics"
 dir_dataset = option.dir_dataset
@@ -45,8 +48,6 @@ for dir in output_dirs:
 
 path_train_list = pathjoin(dir_dataset, 'train.csv')
 # path_test_list = pathjoin(dir_dataset, 'test.csv')
-
-width, height = 1216, 352 # the size you want the image to be after conversion
 
 # Label = namedtuple('Label', ['name', 'id', 'trainId', 'category', 'categoryId', 'hasInstances', 'ignoreInEval', 'color'])
 # labels = [
