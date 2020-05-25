@@ -157,7 +157,7 @@ for imgN in imageNames:
 fout_train.close()
 print("%d valid file sets found, written in file %s" % (fileCount, path_train_list))
 if option.calculate_mean:
-    print("pixel mean value = %.3f" % (pixelSum/pixelNum))
+    print("pixel mean value = {}".format(pixelSum/pixelNum))
 
 ### testing images, only convert to grayscale as no labels available
 fout_test = open(path_test_list, 'w')
