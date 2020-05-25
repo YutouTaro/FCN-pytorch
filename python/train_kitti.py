@@ -176,7 +176,7 @@ def train():
         torch.save(fcn_model.module.state_dict(), model_name)
         lr = optimizer.param_groups[0]['lr']
         print("Epoch %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (epoch, loss.data, lr, time.time() - timestart_epoch))
-        if epoch % 10 == 1:
+        if epoch % 10 == 0:
             net_name = pathjion(dir_model, "net_%03d.pth"%(epoch))
             copyfile(model_name, net_name)
 
