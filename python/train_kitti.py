@@ -26,13 +26,14 @@ n_class    = 34
 parser =argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 # parser.add_argument('--dataset', type=str, default='kitti', choices=['kitti', 'camvid', 'cityscape'], help='name of the dataset')
 parser.add_argument('--dir_dataset', '-d', type=str, required=True, help='directory to the dataset, the last folder should be data_semantics')
+parser.add_argument('--model'     , type=str  , default='fcns', choices=['fcn32s', 'fcn16s', 'fcn8s','fcns'], help="the strucuture of the model")
 parser.add_argument('--batch_size', type=int  , default=4   , help='input batch size')
-parser.add_argument('--epochs'   , type=int  , default=500 , help='number of epochs to train')
-parser.add_argument('--lr'       , type=float, default=1e-4, help='learning rate')
-parser.add_argument('--momentum' , type=float, default=0   , help='momentum')
-parser.add_argument('--w_decay'  , type=float, default=1e-5, help='weight decay')
-parser.add_argument('--step_size', type=int  , default=50  , help='step size')
-parser.add_argument('--gamma'    , type=float, default=0.5 , help='gamma')
+parser.add_argument('--epochs'    , type=int  , default=500 , help='number of epochs to train')
+parser.add_argument('--lr'        , type=float, default=1e-4, help='learning rate')
+parser.add_argument('--momentum'  , type=float, default=0   , help='momentum')
+parser.add_argument('--w_decay'   , type=float, default=1e-5, help='weight decay')
+parser.add_argument('--step_size' , type=int  , default=50  , help='step size')
+parser.add_argument('--gamma'     , type=float, default=0.5 , help='gamma')
 
 
 parser.add_argument('--isCrop'        , action='store_true', default=False, help='crop the image?')
@@ -63,6 +64,18 @@ if option.continue_train or option.isTest:
 else:
     epoch_count = 0
 
+if option.model == 'fcns':
+    model = FCNs
+elif option.model == 'fcn8s':
+    model = FCN8s
+elif option.model == 'fcn16s':
+    model = FCN16s
+elif option.model == 'fcn32s':
+    model = FCN32s
+else:
+    print("input model name does not recognised!")
+    quit()
+
 dir_root = option.dir_dataset
 path_train_file = pathjion(dir_root, 'train.csv')
 #create dir for saving model parameters later on
@@ -83,7 +96,7 @@ else: # create a new folder to save
 # save the config file
 print('='*20)
 with open(pathjion(dir_model, "config.txt"), 'w') as fout:
-    tempStr = 'FCN32s, BCEWithLogits, RMSprop scheduler'
+    tempStr = '%s, BCEWithLogits, RMSprop scheduler' % option.model
     fout.write(tempStr+'\n')
     print(tempStr)
     for k, v in sorted(vars(option).items()):
@@ -103,7 +116,7 @@ train_data = kittiDataset(option= option, csv_file=path_train_file, isTrain = Tr
 train_loader = DataLoader(train_data, batch_size=option.batch_size, shuffle=True, num_workers=8)
 
 vgg_model = VGGNet(requires_grad=True, remove_fc=True)
-fcn_model = FCN32s(pretrained_net=vgg_model, n_class=n_class)
+fcn_model = model(pretrained_net=vgg_model, n_class=n_class)
 
 if option.isTest or option.continue_train:
     fcn_model.load_state_dict(torch.load(save_path))
