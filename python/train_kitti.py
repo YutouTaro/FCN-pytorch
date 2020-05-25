@@ -94,6 +94,8 @@ print('='*20)
 
 use_gpu = torch.cuda.is_available()
 num_gpu = list(range(torch.cuda.device_count()))
+if use_gpu:
+    print("cuda detected: {}".format(num_gpu))
 
 # TODO select models from option
 train_data = kittiDataset(option= option, csv_file=path_train_file, isTrain = True, n_class=n_class)
