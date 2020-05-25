@@ -167,6 +167,7 @@ fileCount = 0
 for imgN in imageNames:
     if '.png' not in imgN:
         continue
+    print(imgN)
     # convert rgb img to grayscale
     path_imgBW = pathjoin(dir_testImgBW, imgN)
     if option.resize or not os.path.exists(path_imgBW):
