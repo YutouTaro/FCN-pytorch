@@ -98,7 +98,7 @@ fout_train.write("img,label\n")
 imageNames = os.listdir(dir_trainImg)
 imageNames.sort()
 fileCount = 0
-pixelSum = 0
+pixelSum = np.zeros((3,))
 pixelNum = 0
 for imgN in imageNames:
     if '.png' not in imgN:
@@ -124,21 +124,22 @@ for imgN in imageNames:
     # convert rgb img to grayscale
     path_imgBW = pathjoin(dir_trainImgBW, imgN)
     if option.resize or not os.path.exists(path_imgBW):
-        imgBW = Image.open(pathjoin(dir_trainImg,imgN)).convert('LA')
+        # imgBW = Image.open(pathjoin(dir_trainImg,imgN)).convert('LA')
+        imgBW = Image.open(pathjoin(dir_trainImg,imgN))
         if not imgBW.size == (width, height):
             imgBW = imgBW.resize((width, height), Image.NEAREST)
             print(" resized", end="")
         if option.calculate_mean:
-            imgmat = np.array(imgBW).astype(np.uint8)[:,:,0]
-            pixelSum += imgmat.sum()
-            pixelNum += imgmat.size
+            imgmat = np.array(imgBW).astype(np.uint8)[:,:,:3]
+            pixelSum += imgmat.sum(axis=(0,1))
+            pixelNum += imgmat.size/3
         imgBW.save(path_imgBW)
         print(" image saved")
     elif option.calculate_mean:
         imgBW = Image.open(path_imgBW)
-        imgmat = np.array(imgBW).astype(np.uint8)[:, :, 0]
-        pixelSum += imgmat.sum()
-        pixelNum += imgmat.size
+        imgmat = np.array(imgBW).astype(np.uint8)[:, :, :3]
+        pixelSum += imgmat.sum(axis=(0,1))
+        pixelNum += imgmat.size/3
 
     # create .npy file
     # path_label_npy = pathjoin(dir_trainIdx, imgN)
@@ -171,7 +172,8 @@ for imgN in imageNames:
     # convert rgb img to grayscale
     path_imgBW = pathjoin(dir_testImgBW, imgN)
     if option.resize or not os.path.exists(path_imgBW):
-        imgBW = Image.open(pathjoin(dir_testImg, imgN)).convert('LA')
+        # imgBW = Image.open(pathjoin(dir_testImg, imgN)).convert('LA')
+        imgBW = Image.open(pathjoin(dir_testImg, imgN))
         if not imgBW.size == (width, height):
             imgBW = imgBW.resize((width, height), Image.NEAREST)
             print(" resized", end="")
