@@ -53,6 +53,7 @@ option = parser.parse_args()
 # print("Configs:", configs)
 dir_root = option.dir_dataset
 path_train_file = pathjion(dir_root, 'train.csv')
+path_test_file = pathjion(dir_root, 'test.csv')
 #create dir for saving model parameters later on
 dir_model = pathjion(dir_root, "models")
 if not os.path.exists(dir_model):
@@ -113,7 +114,7 @@ if use_gpu:
 
 # TODO select models from option
 train_data = kittiDataset(option= option, csv_file=path_train_file, isTrain=True, n_class=n_class)
-test_data   = kittiDataset(option= option, csv_file=path_test_file, isTrain=False)
+test_data   = kittiDataset(option= option, csv_file=path_test_file, isTrain=False, n_class=n_class)
 
 train_loader = DataLoader(train_data, batch_size=option.batch_size, shuffle=True, num_workers=8)
 test_loader = DataLoader(test_data, batch_size=1, num_workers=8)
