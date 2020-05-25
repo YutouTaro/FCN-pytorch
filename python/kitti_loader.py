@@ -16,7 +16,9 @@ from torchvision import utils
 # import imageio
 from PIL import Image
 
-means = np.repeat(99.703, 3) #np.array([99.703])
+# means = np.repeat(99.703, 3) #np.array([99.703])
+means = np.array([96.6757915,  101.60559698,  97.83071057]) / 255.
+
 
 class kittiDataset(Dataset):
     def __init__(self, option, csv_file, isTrain, n_class=34):
@@ -39,13 +41,13 @@ class kittiDataset(Dataset):
     def __getitem__(self, idx):
         img_name = self.data.iloc[idx,0]
         img = Image.open(img_name)
-        img = np.array(img).astype(np.float32)[:,:,0]
+        img = np.array(img).astype(np.float32)[:,:,3]
         if self.isTrain:
             label_name = self.data.iloc[idx,1]
             # label = np.load(label_name) # old format, read .npy file which converted in kitti_utils
             imglabel = Image.open(label_name)
             label = np.array(imglabel).astype(np.uint8)
-            assert img.shape == label.shape
+            assert img.shape[:2] == label.shape[:2]
 
         if self.crop:
             h, w  = img.size
@@ -61,10 +63,12 @@ class kittiDataset(Dataset):
                 label = np.fliplr(label)
 
         # reduce mean
-        img -= means[0]
         img /= 255.
+        img[:, :, 0] -= means[0]
+        img[:, :, 1] -= means[1]
+        img[:, :, 2] -= means[2]
         # img = img[np.newaxis, ...]
-        img = np.stack((img, img, img))
+        # img = np.stack((img, img, img))
 
         # convert to tensor
         img = torch.from_numpy(img.copy()).float()
@@ -86,9 +90,9 @@ class kittiDataset(Dataset):
 
 def show_batch(batch):
     img_batch = batch['X']
-    img_batch[:,0,...].add_(means[0]/255.)
-    img_batch[:,1,...].add_(means[1]/255.)
-    img_batch[:,2,...].add_(means[2]/255.)
+    img_batch[:,0,...].add_(means[0])
+    img_batch[:,1,...].add_(means[1])
+    img_batch[:,2,...].add_(means[2])
     batch_size = len(img_batch)
 
     grid = utils.make_grid(img_batch)
