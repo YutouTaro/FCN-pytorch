@@ -48,7 +48,7 @@ for dir in output_dirs:
         print("    dir created: %s" % (dir))
 
 path_train_list = pathjoin(dir_dataset, 'train.csv')
-# path_test_list = pathjoin(dir_dataset, 'test.csv')
+path_test_list = pathjoin(dir_dataset, 'test.csv')
 
 # Label = namedtuple('Label', ['name', 'id', 'trainId', 'category', 'categoryId', 'hasInstances', 'ignoreInEval', 'color'])
 # labels = [
@@ -93,8 +93,8 @@ path_train_list = pathjoin(dir_dataset, 'train.csv')
 print("train folder")
 ### training images, (1)link to .png file of labels, (2)convert to grayscale image (3) resize the image if --resize in input args
 # not any more [(3)create .npy file]
-fout = open(path_train_list, 'w')
-fout.write("img,label\n")
+fout_train = open(path_train_list, 'w')
+fout_train.write("img,label\n")
 imageNames = os.listdir(dir_trainImg)
 imageNames.sort()
 fileCount = 0
@@ -150,17 +150,17 @@ for imgN in imageNames:
     # .npy file is much larger than .png file
     # modify the loader in the future to directly read .png file for labeling
     # and change the content in the csv file
-    # fout.write("%s,%s\n"%(path_imgBW, path_label_npy ))
-    fout.write("%s,%s\n"%(path_imgBW, path_label_new ))
+    # fout_train.write("%s,%s\n"%(path_imgBW, path_label_npy ))
+    fout_train.write("%s,%s\n"%(path_imgBW, path_label_new ))
     fileCount += 1
-fout.close()
+fout_train.close()
 print("%d valid file sets found, written in file %s" % (fileCount, path_train_list))
 if option.calculate_mean:
     print("pixel mean value = %.3f" % (pixelSum/pixelNum))
 
 ### testing images, only convert to grayscale as no labels available
-# fout = open(path_test_list, 'w')
-# fout.write("img,label\n")
+fout_test = open(path_test_list, 'w')
+fout_test.write("img\n")
 imageNames = os.listdir(dir_testImg)
 imageNames.sort()
 fileCount = 0
@@ -169,12 +169,14 @@ for imgN in imageNames:
         continue
     # convert rgb img to grayscale
     path_imgBW = pathjoin(dir_testImgBW, imgN)
-    if not os.path.exists(path_imgBW):
+    if option.resize or not os.path.exists(path_imgBW):
         imgBW = Image.open(pathjoin(dir_testImg, imgN)).convert('LA')
-        # if not imgBW.size == (width, height):
-        #     imgBW = imgBW.resize((width, height), Image.NEAREST)
+        if not imgBW.size == (width, height):
+            imgBW = imgBW.resize((width, height), Image.NEAREST)
+            print(" resized", end="")
         imgBW.save(path_imgBW)
-    # fout.write("%s,%s\n" % (path_imgBW, path_label_npy))
+        print(" image saved")
+    fout_test.write("%s\n" % (path_imgBW))
     fileCount += 1
-# fout.close()
+fout_test.close()
 print("%d images found" % (fileCount))
