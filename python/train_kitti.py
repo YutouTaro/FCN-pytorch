@@ -26,7 +26,7 @@ n_class    = 34
 parser =argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 # parser.add_argument('--dataset', type=str, default='kitti', choices=['kitti', 'camvid', 'cityscape'], help='name of the dataset')
 parser.add_argument('--dir_dataset', '-d', type=str, required=True, help='directory to the dataset, the last folder should be data_semantics')
-parser.add_argument('--batch_size', type=int  , default=6   , help='input batch size')
+parser.add_argument('--batch_size', type=int  , default=4   , help='input batch size')
 parser.add_argument('--epochs'   , type=int  , default=500 , help='number of epochs to train')
 parser.add_argument('--lr'       , type=float, default=1e-4, help='learning rate')
 parser.add_argument('--momentum' , type=float, default=0   , help='momentum')
@@ -149,15 +149,15 @@ def train():
             if iter % 10 == 1:
                 lr = optimizer.param_groups[0]['lr']
                 print("\tepoch: %d, iter %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (
-                epoch, iter, loss.data, lr, time.time() - timeTrain))
-                timeTrain = time.time()
+                epoch, iter, loss.data, lr, time.time() - timestart_iters))
+                timestart_iters = time.time()
 
         scheduler.step()
 
         model_name = pathjion(dir_model, "net_latest.pth")
         torch.save(fcn_model.module.state_dict(), model_name)
         lr = optimizer.param_groups[0]['lr']
-        print("Epoch %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (epoch, loss.data, lr, time.time() - ts))
+        print("Epoch %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (epoch, loss.data, lr, time.time() - timestart_epoch))
         if epoch % 10 == 1:
             net_name = pathjion(dir_model, "net_%03d.pth"%(epoch))
             copyfile(model_name, net_name)
