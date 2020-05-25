@@ -8,7 +8,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
 from fcn import VGGNet, FCN32s, FCN16s, FCN8s, FCNs
-from kitti_loader import kittiDataset
+from kitti_loader import kittiDataset, show_batch
 
 from matplotlib import pyplot as plt
 import numpy as np
@@ -179,11 +179,9 @@ def train():
             net_name = pathjion(dir_model, "net_%03d.pth"%(epoch))
             copyfile(model_name, net_name)
 
-def val(epoch):
+def test(epoch=0):
     fcn_model.eval()
-    total_ious = []
-    pixel_accs = []
-    for iter, batch in enumerate(val_loader):
+    for iter, batch in enumerate(test_loader):
         timeIter = time.time()
         if use_gpu:
             inputs = Variable(batch['X'].cuda())
@@ -195,24 +193,12 @@ def val(epoch):
 
         N, _, h, w = output.shape
         pred = output.transpose(0, 2, 3, 1).reshape(-1, n_class).argmax(axis=1).reshape(N, h, w)
-
-        target = batch['l'].cpu().numpy().reshape(N, h, w)
-        for p, t in zip(pred, target):
-            total_ious.append(iou(p, t))
-            pixel_accs.append(pixel_acc(p, t))
-
-        print("\tepoch: %d, iter: %d, %.2f sec" % (epoch, iter, time.time()-timeIter))
-
-    # Calculate average IoU
-    total_ious = np.array(total_ious).T  # n_class * val_len
-    ious = np.nanmean(total_ious, axis=1)
-    pixel_accs = np.array(pixel_accs).mean()
-    print("epoch{}, pix_acc: {}, meanIoU: {}, IoUs: {}".format(epoch, pixel_accs, np.nanmean(ious), ious))
-    IU_scores[epoch-1] = ious
-    np.save(os.path.join(score_dir, "meanIU"), IU_scores)
-    pixel_scores[epoch-1] = pixel_accs
-    np.save(os.path.join(score_dir, "meanPixel"), pixel_scores)
-
+        plt.figure()
+        show_batch(batch)
+        plt.axis('off')
+        plt.ioff()
+        plt.show()
+        print("\tepoch: %d, iter: %d, %.2f sec" % (epoch, iter, time.time() - timeIter))
 
 # borrow functions and modify it from https://github.com/Kaixhin/FCN-semantic-segmentation/blob/master/main.py
 # Calculates class intersections over unions
@@ -239,6 +225,6 @@ def pixel_acc(pred, target):
 
 if __name__ == "__main__":
     if option.isTest:
-        print("test module is still on progress")
+        test(option.which_epoch)
     else:
         train()
