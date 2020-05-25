@@ -76,7 +76,7 @@ if option.continue_train and option.isTest: # cannot be True at the same time
 if option.continue_train or option.isTest:
     # TODO get the configs as input
     epoch_count = 500
-    save_path = pathjion(dir_root, "models", "net-%s"%(option.which_folder), "net_%03d.pth"%(epoch_count) )
+    save_path = pathjion(dir_root, "models", option.which_folder, "net_%03d.pth"%(epoch_count) )
     # save_path = "%s/models/net-%s/net_%03d.pth" % (dir_root, option.which_folder, epoch_count)
     option.lr *= math.pow(option.w_decay, int(epoch_count/50))
 else:
