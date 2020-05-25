@@ -41,7 +41,7 @@ class kittiDataset(Dataset):
     def __getitem__(self, idx):
         img_name = self.data.iloc[idx,0]
         img = Image.open(img_name)
-        img = np.array(img).astype(np.float32)[:,:,3]
+        img = np.array(img).astype(np.float32)
         if self.isTrain:
             label_name = self.data.iloc[idx,1]
             # label = np.load(label_name) # old format, read .npy file which converted in kitti_utils
@@ -63,10 +63,10 @@ class kittiDataset(Dataset):
                 label = np.fliplr(label)
 
         # reduce mean
-        img /= 255.
-        img[:, :, 0] -= means[0]
-        img[:, :, 1] -= means[1]
-        img[:, :, 2] -= means[2]
+        img = np.transpose(img, (2, 0, 1)) / 255.
+        img[0] -= means[0]
+        img[1] -= means[1]
+        img[2] -= means[2]
         # img = img[np.newaxis, ...]
         # img = np.stack((img, img, img))
 
@@ -139,7 +139,7 @@ if __name__ == "__main__":
         train_data = kittiDataset(option=option, csv_file=path_train_file, isTrain=True)
     else:
         path_test_file = os.path.join(dir_root, 'test.csv')
-        test_data = kittiDataset(option=option, csv_file=path_test_file, isTrain=isTrain)
+        test_data = kittiDataset(option=option, csv_file=path_test_file, isTrain=False)
 
     # show a batch
     batch_size = 4
