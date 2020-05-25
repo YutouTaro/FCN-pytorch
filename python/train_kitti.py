@@ -97,7 +97,8 @@ else:
 
 # save the config file
 print('='*20)
-with open(pathjion(dir_model, "config.txt"), 'w') as fout:
+config_fileName = "config_test.txt" if option.isTest else "config_train.txt"
+with open(pathjion(dir_model, config_fileName), 'w') as fout:
     tempStr = '%s, BCEWithLogits, RMSprop scheduler' % option.model
     fout.write(tempStr+'\n')
     print(tempStr)
