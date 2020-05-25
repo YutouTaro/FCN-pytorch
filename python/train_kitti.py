@@ -143,7 +143,7 @@ IU_scores    = np.zeros((option.epochs, n_class))
 pixel_scores = np.zeros(option.epochs)
 
 def train():
-    for epoch in range(epoch_count+1, option.epochs):
+    for epoch in range(epoch_count+1, option.epochs+1):
         timestart_epoch = time.time()
         timestart_iters = time.time()
         for iter, batch in enumerate(train_loader):
