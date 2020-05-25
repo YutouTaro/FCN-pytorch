@@ -130,7 +130,7 @@ if __name__ == "__main__":
         sample = train_data[i]
         print(i, sample['X'].size(), sample['Y'].size())
 
-    dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=False, num_workers=4)
+    dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=False, num_workers=0)
 
     for i, batch in enumerate(dataloader):
         print(i, batch['X'].size(), batch['Y'].size())
