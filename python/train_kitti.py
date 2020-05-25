@@ -83,7 +83,7 @@ else: # create a new folder to save
 # save the config file
 print('='*20)
 with open(pathjion(dir_model, "config.txt"), 'w') as fout:
-    tempStr = 'FCNs, BCEWithLogits, RMSprop scheduler'
+    tempStr = 'FCN32s, BCEWithLogits, RMSprop scheduler'
     fout.write(tempStr+'\n')
     print(tempStr)
     for k, v in sorted(vars(option).items()):
@@ -103,7 +103,7 @@ train_data = kittiDataset(option= option, csv_file=path_train_file, isTrain = Tr
 train_loader = DataLoader(train_data, batch_size=option.batch_size, shuffle=True, num_workers=8)
 
 vgg_model = VGGNet(requires_grad=True, remove_fc=True)
-fcn_model = FCNs(pretrained_net=vgg_model, n_class=n_class)
+fcn_model = FCN32s(pretrained_net=vgg_model, n_class=n_class)
 
 if option.isTest or option.continue_train:
     fcn_model.load_state_dict(torch.load(save_path))
