@@ -285,7 +285,6 @@ def test(epoch=0):
         # im.save(path_pred_img)
         np.save(path_pred_np, imgout)
         threshold = imgout.size * 0
-        h,w = imgout.size
         imgrgb_np = np.zeros((h,w,3))
         imgrgb_np = np.stack((imgrgb_np, imgrgb_np, imgrgb_np))
         for idx, num in Counter(imgout.flatten()).items():
