@@ -7,8 +7,8 @@ from torch.optim import lr_scheduler
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
-from python.fcn import VGGNet, FCN32s, FCN16s, FCN8s, FCNs
-from python.kitti_loader import kittiDataset, show_batch
+from fcn import VGGNet, FCN32s, FCN16s, FCN8s, FCNs
+from kitti_loader import kittiDataset, show_batch
 from PIL import Image
 
 from matplotlib import pyplot as plt
@@ -286,7 +286,7 @@ def test(epoch=0):
         np.save(path_pred_np, imgout)
         threshold = imgout.size * 0
         imgrgb_np = np.zeros((h,w,3))
-        imgrgb_np = np.stack((imgrgb_np, imgrgb_np, imgrgb_np))
+        # imgrgb_np = np.stack((imgrgb_np, imgrgb_np, imgrgb_np))
         for idx, num in Counter(imgout.flatten()).items():
             # if num <= threshold:
             # prednp[prednp==idx] = 0
