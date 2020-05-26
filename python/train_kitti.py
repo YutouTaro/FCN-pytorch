@@ -219,7 +219,7 @@ def test(epoch=0):
         plt.ioff()
         plt.show()
         print("\tepoch: %d, iter: %d, %.2f sec" % (epoch, iter, time.time() - timeIter))
-        im = Image.fromarray(imgout)
+        im = Image.fromarray((imgout/n_class*255).astype(np.uint8))
         path_pred_img = pathjoin(dir_predict, "pred_%03d.png"%iter)
         im.save(path_pred_img)
         # np.save("/content/drive/My Drive/data_semantics/testing/predict/pred_00.npy", imgout)
