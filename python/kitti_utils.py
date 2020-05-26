@@ -127,7 +127,7 @@ for imgN in imageNames:
         # imgBW = Image.open(pathjoin(dir_trainImg,imgN)).convert('LA')
         imgBW = Image.open(pathjoin(dir_trainImg,imgN))
         if not imgBW.size == (width, height):
-            imgBW = imgBW.resize((width, height), Image.NEAREST)
+            imgBW = imgBW.resize((width, height), Image.BICUBIC)
             print(" resized", end="")
         if option.calculate_mean:
             imgmat = np.array(imgBW).astype(np.uint8)[:,:,:3]
