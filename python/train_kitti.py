@@ -7,8 +7,8 @@ from torch.optim import lr_scheduler
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
-from fcn import VGGNet, FCN32s, FCN16s, FCN8s, FCNs
-from kitti_loader import kittiDataset, show_batch
+from python.fcn import VGGNet, FCN32s, FCN16s, FCN8s, FCNs
+from python.kitti_loader import kittiDataset, show_batch
 from PIL import Image
 
 from matplotlib import pyplot as plt
@@ -219,6 +219,7 @@ def test(epoch=0):
         # show_batch(batch)
         imgout = pred.transpose((1, 2, 0))
         imgout = imgout[:, :, 0]
+        save()
         plt.imshow(imgout)
         plt.axis('off')
         plt.ioff()
@@ -227,7 +228,7 @@ def test(epoch=0):
         im = Image.fromarray((imgout/n_class*255).astype(np.uint8))
         path_pred_img = pathjoin(dir_predict, "pred_%03d.png"%iter)
         im.save(path_pred_img)
-        # np.save("/content/drive/My Drive/data_semantics/testing/predict/pred_00.npy", imgout)
+        np.save(pathjoin(dir_predict, "pred_%03d.npy"%iter), imgout)
         # break
 
 
