@@ -34,7 +34,7 @@ class kittiDataset(Dataset):
             self.new_w = option.new_width
         else:
             self.crop = False
-            self.flip_rate = option.flip_rate
+            self.flip_rate = 0
     def __len__(self):
         return len(self.data)
 
