@@ -21,6 +21,11 @@ import datetime
 from shutil import copyfile
 import math
 import argparse
+from inspect import currentframe
+
+def __line__():
+    cf = currentframe()
+    return cf.f_back.f_lineno
 
 n_class = 34
 
