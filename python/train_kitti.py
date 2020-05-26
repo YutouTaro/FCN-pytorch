@@ -219,7 +219,6 @@ def test(epoch=0):
         # show_batch(batch)
         imgout = pred.transpose((1, 2, 0))
         imgout = imgout[:, :, 0]
-        save()
         plt.imshow(imgout)
         plt.axis('off')
         plt.ioff()
