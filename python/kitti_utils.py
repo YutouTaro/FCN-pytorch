@@ -132,7 +132,7 @@ for imgN in imageNames:
         print("%s does not exist" % (path_label))
         continue
     else:
-        path_label_new = path_label.replace("/semantic/", "/semantic0/")
+        path_label_new = path_label.replace("/semantic/", "/semantic_%s/"%idx_folder)
         if option.resize or not os.path.exists(path_label_new):
             imglabel = Image.open(path_label)
             if not imglabel.size == (width, height):
