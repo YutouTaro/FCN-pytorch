@@ -16,17 +16,18 @@ from torchvision import utils
 # import imageio
 from PIL import Image
 
-# means = np.repeat(99.703, 3) #np.array([99.703])
-means = np.array([96.6757915,  101.60559698,  97.83071057]) / 255.
+
 
 
 class kittiDataset(Dataset):
     def __init__(self, option, csv_file, isTrain, n_class=34):
         self.data = pd.read_csv(csv_file)
-        self.means = means
         self.n_class = n_class
         self.isTrain = isTrain
-
+        if option.channels == 1:
+            self.means = np.repeat(99.21219586, 3) / 255.  # np.array([99.21219586])/255.
+        else:
+            self.means = np.array([96.6757915,  101.60559698,  97.83071057]) / 255.
         if isTrain:
             self.crop = option.isCrop
             self.flip_rate = 0.5
@@ -42,6 +43,13 @@ class kittiDataset(Dataset):
         img_name = self.data.iloc[idx,0]
         img = Image.open(img_name)
         img = np.array(img).astype(np.float32)
+        if len(img.shape) == 2: # grayscale image
+            img = np.repeat(img[:, :, np.newaxis], 3, axis=2)
+        num_channel = img.shape[2]
+        if num_channel in [2, 4]:
+            img = img[...,:-1]
+        if num_channel == 1:
+            img = np.repeat(img, 3, axis=2)
         if self.isTrain:
             label_name = self.data.iloc[idx,1]
             # label = np.load(label_name) # old format, read .npy file which converted in kitti_utils
@@ -64,9 +72,11 @@ class kittiDataset(Dataset):
 
         # reduce mean
         img = np.transpose(img, (2, 0, 1)) / 255.
-        img[0] -= means[0]
-        img[1] -= means[1]
-        img[2] -= means[2]
+        for i in range(img.shape[0]):
+            img[i] -= means[i]
+        # img[0] -= means[0]
+        # img[1] -= means[1]
+        # img[2] -= means[2]
         # img = img[np.newaxis, ...]
         # img = np.stack((img, img, img))
 
@@ -85,7 +95,6 @@ class kittiDataset(Dataset):
             sample = {'X': img, 'Y': target, 'l': label}
         else:
             sample = {'X': img}
-
         return sample
 
 def show_batch(batch):
