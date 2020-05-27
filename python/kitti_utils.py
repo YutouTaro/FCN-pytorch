@@ -30,7 +30,7 @@ parser.add_argument('--resize', action='store_true', default=False,
 parser.add_argument('--width', '-w', type=int, default=512,
                     help='width of the reshaped image, only useful when --resize')
 parser.add_argument('--height', type=int, default=160, help='height of the reshaped image, only useful when --resize')
-parser.add_argument('--channels', '-nc', type=int, default=3, help='number of output image channels', choices=[1, 3])
+parser.add_argument('--channels', '-nc', type=int, required=True, help='number of output image channels', choices=[1, 3])
 option = parser.parse_args()
 
 print("=" * 10 + "directories" + "=" * 10)
