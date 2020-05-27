@@ -49,7 +49,8 @@ parser.add_argument('--momentum', type=float, default=0, help='momentum')
 parser.add_argument('--w_decay', type=float, default=1e-5, help='weight decay')
 parser.add_argument('--step_size', type=int, default=50, help='step size')
 parser.add_argument('--gamma', type=float, default=0.5, help='gamma')
-parser.add_argument('--channels', '-nc', type=int, default=3, help='number of image channels', choices=[1, 3])
+parser.add_argument('--channels', '-nc', type=int, required=True,
+                    help='number of image channels', choices=[1, 3])
 
 parser.add_argument('--isCrop', action='store_true', default=False, help='crop the image?')
 parser.add_argument('--flip_rate', type=float, default=0.5, help='flip rate')
