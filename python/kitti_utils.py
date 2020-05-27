@@ -60,7 +60,7 @@ dir_trainImgBW = pathjoin(dir_train, "image_"+idx_folder)  # dir to save graysca
 # dir_trainIdx   = pathjoin(dir_train, "label_idx")             # dir to save labeled index
 
 dir_testImgBW = pathjoin(dir_dataset, "testing", "image_"+idx_folder)  # dir to save grayscale images
-dir_labelnew = pathjoin(dir_dataset, "training", "semantic_"+idx_folder)
+dir_labelnew = pathjoin(dir_dataset, "training", "semantic_0")
 output_dirs = [dir_trainImgBW, dir_testImgBW, dir_labelnew]
 # create the directories if not exist
 for dir in output_dirs:
@@ -132,7 +132,8 @@ for imgN in imageNames:
         print("%s does not exist" % (path_label))
         continue
     else:
-        path_label_new = path_label.replace("/semantic/", "/semantic_%s/"%idx_folder)
+        # path_label_new = path_label.replace("/semantic/", "/semantic_%s/"%idx_folder)
+        path_label_new = pathjoin(dir_labelnew,imgN)
         if option.resize or not os.path.exists(path_label_new):
             imglabel = Image.open(path_label)
             if not imglabel.size == (width, height):
@@ -212,3 +213,7 @@ for imgN in imageNames:
     fileCount += 1
 fout_test.close()
 print("%d images found" % (fileCount))
+
+print("resized train image are saved to %s" % dir_trainImgBW)
+print("resized train label are saved to %s" % dir_labelnew)
+print("resized test image are saved to %s" % dir_testImgBW)
