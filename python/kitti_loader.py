@@ -73,7 +73,7 @@ class kittiDataset(Dataset):
         # reduce mean
         img = np.transpose(img, (2, 0, 1)) / 255.
         for i in range(img.shape[0]):
-            img[i] -= means[i]
+            img[i] -= self.means[i]
         # img[0] -= means[0]
         # img[1] -= means[1]
         # img[2] -= means[2]
