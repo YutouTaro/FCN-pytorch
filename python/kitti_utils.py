@@ -55,11 +55,12 @@ for dir in input_dirs:
         print("%s does not exist" % (dir))
 # output directories
 
-dir_trainImgBW = pathjoin(dir_train, "image_0")  # dir to save grayscale images
+idx_folder = "0" if option.channels==1 else "1"
+dir_trainImgBW = pathjoin(dir_train, "image_"+idx_folder)  # dir to save grayscale images
 # dir_trainIdx   = pathjoin(dir_train, "label_idx")             # dir to save labeled index
 
-dir_testImgBW = pathjoin(dir_dataset, "testing", "image_0")  # dir to save grayscale images
-dir_labelnew = pathjoin(dir_dataset, "training", "semantic0")
+dir_testImgBW = pathjoin(dir_dataset, "testing", "image_"+idx_folder)  # dir to save grayscale images
+dir_labelnew = pathjoin(dir_dataset, "training", "semantic_"+idx_folder)
 output_dirs = [dir_trainImgBW, dir_testImgBW, dir_labelnew]
 # create the directories if not exist
 for dir in output_dirs:
