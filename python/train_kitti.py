@@ -7,6 +7,13 @@ from torch.optim import lr_scheduler
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
+import os, sys
+if os.name == 'nt': # windows10
+    # path_append = 'D:\GitHub_repository\FCN-pytorch\python\*'
+    sys.path.append('D:\GitHub_repository\FCN-pytorch\python\*')
+# elif os.name == 'posix': # colab
+#     path_append = '/content/FCN-pytorch/FCN-pytorch/python/*'
+# sys.path.append(path_append)
 from fcn import VGGNet, FCN32s, FCN16s, FCN8s, FCNs
 from kitti_loader import kittiDataset, show_batch
 from PIL import Image
@@ -42,6 +49,7 @@ parser.add_argument('--momentum', type=float, default=0, help='momentum')
 parser.add_argument('--w_decay', type=float, default=1e-5, help='weight decay')
 parser.add_argument('--step_size', type=int, default=50, help='step size')
 parser.add_argument('--gamma', type=float, default=0.5, help='gamma')
+parser.add_argument('--channels', '-nc', type=int, default=3, help='number of image channels', choices=[1, 3])
 
 parser.add_argument('--isCrop', action='store_true', default=False, help='crop the image?')
 parser.add_argument('--flip_rate', type=float, default=0.5, help='flip rate')
