@@ -7,38 +7,58 @@ import os
 from os.path import join as pathjoin
 import argparse
 
+
+def pixsum(imgBW):
+    imgmat = np.array(imgBW).astype(np.uint8)
+    if len(imgmat.shape) == 2:  # grayscale image
+        imgmat = np.expand_dims(imgmat, axis=2)
+    else:
+        imgmat = imgmat[:, :, :nc]
+    pSum = imgmat.sum(axis=(0, 1))
+    pNum = imgmat.size / nc
+    return pSum, pNum
+
+
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--dir_dataset','-d', type=str, required=True, help='directory to the dataset, the last folder '
-                                                                        'should be data_semantics')
-parser.add_argument('--calculate_mean'  , action='store_true', default=False, help='calculate the mean value of the images')
+parser.add_argument('--dir_dataset', '-d', type=str, required=True, help='directory to the dataset, the last folder '
+                                                                         'should be data_semantics')
+parser.add_argument('--calculate_mean', action='store_true', default=False,
+                    help='calculate the mean value of the images')
 # TODO change from boolean to self input size
-parser.add_argument('--resize'          , action='store_true', default=False, help='reshape the images and labels to predefined size')
+parser.add_argument('--resize', action='store_true', default=False,
+                    help='reshape the images and labels to predefined size')
+parser.add_argument('--width', '-w', type=int, default=512,
+                    help='width of the reshaped image, only useful when --resize')
+parser.add_argument('--height', type=int, default=160, help='height of the reshaped image, only useful when --resize')
+parser.add_argument('--channels', '-nc', type=int, default=3, help='number of output image channels', choices=[1, 3])
 option = parser.parse_args()
 
-print("="*10 + "directories" + "="*10)
+print("=" * 10 + "directories" + "=" * 10)
 # width, height = 1216, 352 # the size you want the image to be after conversion
-width, height = 512, 160 # the size you want the image to be after conversion
+# width, height = 512, 160 # the size you want the image to be after conversion
+width, height = option.width, option.height
+nc = option.channels  # number of channels
 if option.resize:
-    print("images and labels will be resized to (w, h)=(%d, %d)" %(width, height))
+    print("images and labels will be resized to (w, h)=(%d, %d)" % (width, height))
 # dir_dataset = "D:\Google Drive (yutouttaro@gmail.com)\data_semantics"
 # dir_dataset = "/content/drive/My Drive/data_semantics"
 dir_dataset = option.dir_dataset
 # input directories
-dir_train      = pathjoin(dir_dataset, "training")
-dir_trainLabel = pathjoin(dir_train, "semantic")              # dir to semantic labels (INDEX, not color)
-dir_trainImg   = pathjoin(dir_train, "image_2")               # dir to the RGB images
+dir_train = pathjoin(dir_dataset, "training")
+dir_trainLabel = pathjoin(dir_train, "semantic")  # dir to semantic labels (INDEX, not color)
+dir_trainImg = pathjoin(dir_train, "image_2")  # dir to the RGB images
 
-dir_testImg    = pathjoin(dir_dataset, 'testing', 'image_2')  # dir to testing RGB images
-input_dirs = [dir_train, dir_trainLabel,dir_trainImg,  dir_testImg]
+dir_testImg = pathjoin(dir_dataset, 'testing', 'image_2')  # dir to testing RGB images
+input_dirs = [dir_train, dir_trainLabel, dir_trainImg, dir_testImg]
 for dir in input_dirs:
     if not os.path.exists(dir):
         print("%s does not exist" % (dir))
 # output directories
 
-dir_trainImgBW = pathjoin(dir_train, "image_0")               # dir to save grayscale images
+dir_trainImgBW = pathjoin(dir_train, "image_0")  # dir to save grayscale images
 # dir_trainIdx   = pathjoin(dir_train, "label_idx")             # dir to save labeled index
 
-dir_testImgBW  = pathjoin(dir_dataset, "testing", "image_0")  # dir to save grayscale images
+dir_testImgBW = pathjoin(dir_dataset, "testing", "image_0")  # dir to save grayscale images
 dir_labelnew = pathjoin(dir_dataset, "training", "semantic0")
 output_dirs = [dir_trainImgBW, dir_testImgBW, dir_labelnew]
 # create the directories if not exist
@@ -98,7 +118,7 @@ fout_train.write("img,label\n")
 imageNames = os.listdir(dir_trainImg)
 imageNames.sort()
 fileCount = 0
-pixelSum = np.zeros((3,))
+pixelSum = np.zeros((nc,))
 pixelNum = 0
 for imgN in imageNames:
     if '.png' not in imgN:
@@ -106,7 +126,7 @@ for imgN in imageNames:
     print(imgN)
 
     # checking label exsits
-    path_label = pathjoin(dir_trainLabel, imgN) # label name
+    path_label = pathjoin(dir_trainLabel, imgN)  # label name
     if not os.path.exists(path_label):
         print("%s does not exist" % (path_label))
         continue
@@ -120,27 +140,33 @@ for imgN in imageNames:
             imglabel.save(path_label_new)
             print(" label saved")
 
-
     # convert rgb img to grayscale
     path_imgBW = pathjoin(dir_trainImgBW, imgN)
     if option.resize or not os.path.exists(path_imgBW):
-        # imgBW = Image.open(pathjoin(dir_trainImg,imgN)).convert('LA')
-        imgBW = Image.open(pathjoin(dir_trainImg,imgN))
+        if nc == 1:
+            imgBW = Image.open(pathjoin(dir_trainImg, imgN)).convert('L')
+        else:
+            imgBW = Image.open(pathjoin(dir_trainImg, imgN))
         if not imgBW.size == (width, height):
             imgBW = imgBW.resize((width, height), Image.BICUBIC)
             print(" resized", end="")
         if option.calculate_mean:
-            imgmat = np.array(imgBW).astype(np.uint8)[:,:,:3]
-            pixelSum += imgmat.sum(axis=(0,1))
-            pixelNum += imgmat.size/3
+            # imgmat = np.array(imgBW).astype(np.uint8)[:,:,:nc]
+            # pixelSum += imgmat.sum(axis=(0,1))
+            # pixelNum += imgmat.size/nc
+            pSum, pNum = pixsum(imgBW)
+            pixelSum += pSum
+            pixelNum += pNum
         imgBW.save(path_imgBW)
         print(" image saved")
     elif option.calculate_mean:
         imgBW = Image.open(path_imgBW)
-        imgmat = np.array(imgBW).astype(np.uint8)[:, :, :3]
-        pixelSum += imgmat.sum(axis=(0,1))
-        pixelNum += imgmat.size/3
-
+        # imgmat = np.array(imgBW).astype(np.uint8)[:, :, :nc]
+        # pixelSum += imgmat.sum(axis=(0, 1))
+        # pixelNum += imgmat.size / nc
+        pSum, pNum = pixsum(imgBW)
+        pixelSum += pSum
+        pixelNum += pNum
     # create .npy file
     # path_label_npy = pathjoin(dir_trainIdx, imgN)
     # path_label_npy = path_label_npy.split('.png')[0] + '.npy'
@@ -152,12 +178,12 @@ for imgN in imageNames:
     # modify the loader in the future to directly read .png file for labeling
     # and change the content in the csv file
     # fout_train.write("%s,%s\n"%(path_imgBW, path_label_npy ))
-    fout_train.write("%s,%s\n"%(path_imgBW, path_label_new ))
+    fout_train.write("%s,%s\n" % (path_imgBW, path_label_new))
     fileCount += 1
 fout_train.close()
 print("%d valid file sets found, written in file %s" % (fileCount, path_train_list))
 if option.calculate_mean:
-    print("pixel mean value = {}".format(pixelSum/pixelNum))
+    print("pixel mean value = {}".format(pixelSum / pixelNum))
 
 ### testing images, only convert to grayscale as no labels available
 fout_test = open(path_test_list, 'w')
@@ -172,10 +198,12 @@ for imgN in imageNames:
     # convert rgb img to grayscale
     path_imgBW = pathjoin(dir_testImgBW, imgN)
     if option.resize or not os.path.exists(path_imgBW):
-        # imgBW = Image.open(pathjoin(dir_testImg, imgN)).convert('LA')
-        imgBW = Image.open(pathjoin(dir_testImg, imgN))
+        if nc == 1:
+            imgBW = Image.open(pathjoin(dir_testImg, imgN)).convert('L')
+        else:
+            imgBW = Image.open(pathjoin(dir_testImg, imgN))
         if not imgBW.size == (width, height):
-            imgBW = imgBW.resize((width, height), Image.NEAREST)
+            imgBW = imgBW.resize((width, height), Image.BICUBIC)
             print(" resized", end="")
         imgBW.save(path_imgBW)
         print(" image saved")
