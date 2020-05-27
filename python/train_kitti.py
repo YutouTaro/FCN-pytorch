@@ -100,6 +100,8 @@ if option.continue_train or option.isTest:
 else:
     epoch_count = 0
 
+if option.isTest:
+    option.batch_size = 1
 # select model from option
 if option.model == 'fcns':
     model = FCNs
