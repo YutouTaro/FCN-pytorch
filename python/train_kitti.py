@@ -168,6 +168,8 @@ scheduler = lr_scheduler.StepLR(optimizer, step_size=option.step_size, gamma=opt
 
 
 def train():
+    fcn_model.train()
+
     for epoch in range(epoch_count + 1, option.epochs + 1):
         timestart_epoch = time.time()
         timestart_iters = time.time()
