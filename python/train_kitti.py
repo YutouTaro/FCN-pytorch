@@ -284,27 +284,26 @@ def test(epoch=0):
 
         N, _, h, w = output.shape
         pred = output.transpose(0, 2, 3, 1).reshape(-1, n_class).argmax(axis=1).reshape(N, h, w)
-        plt.figure()
-        # show_batch(batch)
+        # plt.figure()
         imgout = pred.transpose((1, 2, 0))
         imgout = imgout[:, :, 0]
-        plt.imshow(imgout)
-        plt.axis('off')
-        plt.ioff()
-        plt.show()
+        # plt.imshow(imgout)
+        # plt.axis('off')
+        # plt.ioff()
+        # plt.show()
         print("\tepoch: %d, iter: %d, %.2f sec" % (epoch, iter, time.time() - timeIter))
         # im = Image.fromarray((imgout/n_class*255).astype(np.uint8))
         path_pred_np = pathjoin(dir_predict, "pred_%03d.npy"%iter)
         # im.save(path_pred_img)
         np.save(path_pred_np, imgout)
-        threshold = imgout.size * 0
+        # threshold = imgout.size * 0
         imgrgb_np = np.zeros((h,w,3))
         # imgrgb_np = np.stack((imgrgb_np, imgrgb_np, imgrgb_np))
         for idx, num in Counter(imgout.flatten()).items():
             # if num <= threshold:
             # prednp[prednp==idx] = 0
-            if num >= threshold:
-                imgrgb_np[imgout == idx] = index2color[idx]
+            # if num >= threshold:
+            imgrgb_np[imgout == idx] = index2color[idx]
         # print(sorted(Counter(imgout.flatten()).items()))
         imgrgb = Image.fromarray(imgrgb_np.astype(np.uint8))
         path_pred_img = pathjoin(dir_predict, "pred_%03d.png"%iter)
