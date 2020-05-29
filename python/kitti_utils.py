@@ -18,6 +18,81 @@ def pixsum(imgBW):
     pNum = imgmat.size / nc
     return pSum, pNum
 
+def data_util(path_file_list, dir_Img, dir_Label, dir_LabelNew, dir_ImgBW):
+    ### training images, (1)link to .png file of labels, (2)convert to grayscale image (3) resize the image if --resize in input args
+    # not any more [(3)create .npy file]
+    fout = open(path_file_list, 'w')
+    fout.write("img,label\n")
+    imageNames = os.listdir(dir_Img)
+    imageNames.sort()
+    fileCount = 0
+    pixelSum = np.zeros((nc,))
+    pixelNum = 0
+    for imgN in imageNames:
+        if '.png' not in imgN:
+            continue
+        print(imgN)
+
+        # checking label exsits
+        path_label = pathjoin(dir_Label, imgN)  # label name
+        if not os.path.exists(path_label):
+            print("%s does not exist" % (path_label))
+            continue
+        else:
+            # path_label_new = path_label.replace("/semantic/", "/semantic_%s/"%idx_folder)
+            path_label_new = pathjoin(dir_LabelNew,imgN)
+            if option.resize or not os.path.exists(path_label_new):
+                imglabel = Image.open(path_label)
+                if not imglabel.size == (width, height):
+                    imglabel = imglabel.resize((width, height), Image.NEAREST)
+                    print(" resized", end="")
+                imglabel.save(path_label_new)
+                print(" label saved")
+
+        # convert rgb img to grayscale
+        path_imgBW = pathjoin(dir_ImgBW, imgN)
+        if option.resize or not os.path.exists(path_imgBW):
+            if nc == 1:
+                imgBW = Image.open(pathjoin(dir_Img, imgN)).convert('L')
+            else:
+                imgBW = Image.open(pathjoin(dir_Img, imgN))
+            if not imgBW.size == (width, height):
+                imgBW = imgBW.resize((width, height), Image.BICUBIC)
+                print(" resized", end="")
+            if option.calculate_mean:
+                # imgmat = np.array(imgBW).astype(np.uint8)[:,:,:nc]
+                # pixelSum += imgmat.sum(axis=(0,1))
+                # pixelNum += imgmat.size/nc
+                pSum, pNum = pixsum(imgBW)
+                pixelSum += pSum
+                pixelNum += pNum
+            imgBW.save(path_imgBW)
+            print(" image saved")
+        elif option.calculate_mean:
+            imgBW = Image.open(path_imgBW)
+            # imgmat = np.array(imgBW).astype(np.uint8)[:, :, :nc]
+            # pixelSum += imgmat.sum(axis=(0, 1))
+            # pixelNum += imgmat.size / nc
+            pSum, pNum = pixsum(imgBW)
+            pixelSum += pSum
+            pixelNum += pNum
+        # create .npy file
+        # path_label_npy = pathjoin(dir_trainIdx, imgN)
+        # path_label_npy = path_label_npy.split('.png')[0] + '.npy'
+        # if not os.path.exists(path_label_npy):
+        # imgIdx = Image.open(path_label)
+        # idx_mat = np.array(imgIdx).astype(np.uint8)
+        # np.save(path_label_npy, idx_mat)
+        # .npy file is much larger than .png file
+        # modify the loader in the future to directly read .png file for labeling
+        # and change the content in the csv file
+        # fout.write("%s,%s\n"%(path_imgBW, path_label_npy ))
+        fout.write("%s,%s\n" % (path_imgBW, path_label_new))
+        fileCount += 1
+    fout.close()
+    print("%d valid file sets found, written in file %s" % (fileCount, path_file_list))
+    if option.calculate_mean:
+        print("pixel mean value = {}".format(pixelSum / pixelNum))
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--dir_dataset', '-d', type=str, required=True, help='directory to the dataset, the last folder '
@@ -48,8 +123,12 @@ dir_train = pathjoin(dir_dataset, "training")
 dir_trainLabel = pathjoin(dir_train, "semantic")  # dir to semantic labels (INDEX, not color)
 dir_trainImg = pathjoin(dir_train, "image_2")  # dir to the RGB images
 
+dir_val = pathjoin(dir_dataset, "val")
+dir_valLabel = pathjoin(dir_val, "semantic")
+dir_valImg = pathjoin(dir_val, "image_2")
+
 dir_testImg = pathjoin(dir_dataset, 'testing', 'image_2')  # dir to testing RGB images
-input_dirs = [dir_train, dir_trainLabel, dir_trainImg, dir_testImg]
+input_dirs = [dir_train, dir_trainLabel, dir_trainImg, dir_val, dir_valLabel, dir_valImg, dir_testImg]
 for dir in input_dirs:
     if not os.path.exists(dir):
         print("%s does not exist" % (dir))
@@ -58,10 +137,12 @@ for dir in input_dirs:
 idx_folder = "0" if option.channels==1 else "1"
 dir_trainImgBW = pathjoin(dir_train, "image_"+idx_folder)  # dir to save grayscale images
 # dir_trainIdx   = pathjoin(dir_train, "label_idx")             # dir to save labeled index
+dir_trainLabelNew = pathjoin(dir_train, "semantic_0")
+dir_valImgBW = pathjoin(dir_val, "image_"+idx_folder)
+dir_valLabelNew = pathjoin(dir_val, "semantic_0")
 
 dir_testImgBW = pathjoin(dir_dataset, "testing", "image_"+idx_folder)  # dir to save grayscale images
-dir_labelnew = pathjoin(dir_dataset, "training", "semantic_0")
-output_dirs = [dir_trainImgBW, dir_testImgBW, dir_labelnew]
+output_dirs = [dir_trainImgBW, dir_trainLabelNew, dir_valImgBW, dir_valLabelNew, dir_testImgBW]
 # create the directories if not exist
 for dir in output_dirs:
     if not os.path.exists(dir):
@@ -69,123 +150,17 @@ for dir in output_dirs:
         print("    dir created: %s" % (dir))
 
 path_train_list = pathjoin(dir_dataset, 'train.csv')
+path_val_list = pathjoin(dir_dataset, 'val.csv')
 path_test_list = pathjoin(dir_dataset, 'test.csv')
 
-# Label = namedtuple('Label', ['name', 'id', 'trainId', 'category', 'categoryId', 'hasInstances', 'ignoreInEval', 'color'])
-# labels = [
-#     #       name                     id    trainId   category            catId     hasInstances   ignoreInEval   color
-#     Label(  'unlabeled'            ,  0 ,      255 , 'void'            , 0       , False        , True         , (  0,  0,  0) ),
-#     Label(  'ego vehicle'          ,  1 ,      255 , 'void'            , 0       , False        , True         , (  0,  0,  0) ),
-#     Label(  'rectification border' ,  2 ,      255 , 'void'            , 0       , False        , True         , (  0,  0,  0) ),
-#     Label(  'out of roi'           ,  3 ,      255 , 'void'            , 0       , False        , True         , (  0,  0,  0) ),
-#     Label(  'static'               ,  4 ,      255 , 'void'            , 0       , False        , True         , (  0,  0,  0) ),
-#     Label(  'dynamic'              ,  5 ,      255 , 'void'            , 0       , False        , True         , (111, 74,  0) ),
-#     Label(  'ground'               ,  6 ,      255 , 'void'            , 0       , False        , True         , ( 81,  0, 81) ),
-#     Label(  'road'                 ,  7 ,        1 , 'flat'            , 1       , False        , False        , (128, 64,128) ),
-#     Label(  'sidewalk'             ,  8 ,        2 , 'flat'            , 1       , False        , False        , (244, 35,232) ),
-#     Label(  'parking'              ,  9 ,      255 , 'flat'            , 1       , False        , True         , (250,170,160) ),
-#     Label(  'rail track'           , 10 ,      255 , 'flat'            , 1       , False        , True         , (230,150,140) ),
-#     Label(  'building'             , 11 ,        3 , 'construction'    , 2       , False        , False        , ( 70, 70, 70) ),
-#     Label(  'wall'                 , 12 ,        4 , 'construction'    , 2       , False        , False        , (102,102,156) ),
-#     Label(  'fence'                , 13 ,        5 , 'construction'    , 2       , False        , False        , (190,153,153) ),
-#     Label(  'guard rail'           , 14 ,      255 , 'construction'    , 2       , False        , True         , (180,165,180) ),
-#     Label(  'bridge'               , 15 ,      255 , 'construction'    , 2       , False        , True         , (150,100,100) ),
-#     Label(  'tunnel'               , 16 ,      255 , 'construction'    , 2       , False        , True         , (150,120, 90) ),
-#     Label(  'pole'                 , 17 ,        6 , 'object'          , 3       , False        , False        , (153,153,153) ),
-#     Label(  'polegroup'            , 18 ,      255 , 'object'          , 3       , False        , True         , (153,153,153) ),
-#     Label(  'traffic light'        , 19 ,        7 , 'object'          , 3       , False        , False        , (250,170, 30) ),
-#     Label(  'traffic sign'         , 20 ,        8 , 'object'          , 3       , False        , False        , (220,220,  0) ),
-#     Label(  'vegetation'           , 21 ,        9 , 'nature'          , 4       , False        , False        , (107,142, 35) ),
-#     Label(  'terrain'              , 22 ,       10 , 'nature'          , 4       , False        , False        , (152,251,152) ),
-#     Label(  'sky'                  , 23 ,       11 , 'sky'             , 5       , False        , False        , ( 70,130,180) ),
-#     Label(  'person'               , 24 ,       12 , 'human'           , 6       , True         , False        , (220, 20, 60) ),
-#     Label(  'rider'                , 25 ,       13 , 'human'           , 6       , True         , False        , (255,  0,  0) ),
-#     Label(  'car'                  , 26 ,       14 , 'vehicle'         , 7       , True         , False        , (  0,  0,142) ),
-#     Label(  'truck'                , 27 ,       15 , 'vehicle'         , 7       , True         , False        , (  0,  0, 70) ),
-#     Label(  'bus'                  , 28 ,       16 , 'vehicle'         , 7       , True         , False        , (  0, 60,100) ),
-#     Label(  'caravan'              , 29 ,      255 , 'vehicle'         , 7       , True         , True         , (  0,  0, 90) ),
-#     Label(  'trailer'              , 30 ,      255 , 'vehicle'         , 7       , True         , True         , (  0,  0,110) ),
-#     Label(  'train'                , 31 ,       17 , 'vehicle'         , 7       , True         , False        , (  0, 80,100) ),
-#     Label(  'motorcycle'           , 32 ,       18 , 'vehicle'         , 7       , True         , False        , (  0,  0,230) ),
-#     Label(  'bicycle'              , 33 ,       19 , 'vehicle'         , 7       , True         , False        , (119, 11, 32) ),
-#     Label(  'license plate'        , -1 ,       -1 , 'vehicle'         , 7       , False        , True         , (  0,  0,142) ),
-# ]
-
 print("train folder")
-### training images, (1)link to .png file of labels, (2)convert to grayscale image (3) resize the image if --resize in input args
-# not any more [(3)create .npy file]
-fout_train = open(path_train_list, 'w')
-fout_train.write("img,label\n")
-imageNames = os.listdir(dir_trainImg)
-imageNames.sort()
-fileCount = 0
-pixelSum = np.zeros((nc,))
-pixelNum = 0
-for imgN in imageNames:
-    if '.png' not in imgN:
-        continue
-    print(imgN)
 
-    # checking label exsits
-    path_label = pathjoin(dir_trainLabel, imgN)  # label name
-    if not os.path.exists(path_label):
-        print("%s does not exist" % (path_label))
-        continue
+for path_file_list, dir_Img, dir_Label, dir_LabelNew, dir_ImgBW in zip([path_train_list, path_val_list], [dir_trainImg, dir_valImg], [dir_trainLabel, dir_valLabel], [dir_trainLabelNew, dir_valLabelNew], [dir_trainImgBW, dir_valImgBW]):
+    if "train" in path_file_list:
+        print("train folder")
     else:
-        # path_label_new = path_label.replace("/semantic/", "/semantic_%s/"%idx_folder)
-        path_label_new = pathjoin(dir_labelnew,imgN)
-        if option.resize or not os.path.exists(path_label_new):
-            imglabel = Image.open(path_label)
-            if not imglabel.size == (width, height):
-                imglabel = imglabel.resize((width, height), Image.NEAREST)
-                print(" resized", end="")
-            imglabel.save(path_label_new)
-            print(" label saved")
-
-    # convert rgb img to grayscale
-    path_imgBW = pathjoin(dir_trainImgBW, imgN)
-    if option.resize or not os.path.exists(path_imgBW):
-        if nc == 1:
-            imgBW = Image.open(pathjoin(dir_trainImg, imgN)).convert('L')
-        else:
-            imgBW = Image.open(pathjoin(dir_trainImg, imgN))
-        if not imgBW.size == (width, height):
-            imgBW = imgBW.resize((width, height), Image.BICUBIC)
-            print(" resized", end="")
-        if option.calculate_mean:
-            # imgmat = np.array(imgBW).astype(np.uint8)[:,:,:nc]
-            # pixelSum += imgmat.sum(axis=(0,1))
-            # pixelNum += imgmat.size/nc
-            pSum, pNum = pixsum(imgBW)
-            pixelSum += pSum
-            pixelNum += pNum
-        imgBW.save(path_imgBW)
-        print(" image saved")
-    elif option.calculate_mean:
-        imgBW = Image.open(path_imgBW)
-        # imgmat = np.array(imgBW).astype(np.uint8)[:, :, :nc]
-        # pixelSum += imgmat.sum(axis=(0, 1))
-        # pixelNum += imgmat.size / nc
-        pSum, pNum = pixsum(imgBW)
-        pixelSum += pSum
-        pixelNum += pNum
-    # create .npy file
-    # path_label_npy = pathjoin(dir_trainIdx, imgN)
-    # path_label_npy = path_label_npy.split('.png')[0] + '.npy'
-    # if not os.path.exists(path_label_npy):
-    # imgIdx = Image.open(path_label)
-    # idx_mat = np.array(imgIdx).astype(np.uint8)
-    # np.save(path_label_npy, idx_mat)
-    # .npy file is much larger than .png file
-    # modify the loader in the future to directly read .png file for labeling
-    # and change the content in the csv file
-    # fout_train.write("%s,%s\n"%(path_imgBW, path_label_npy ))
-    fout_train.write("%s,%s\n" % (path_imgBW, path_label_new))
-    fileCount += 1
-fout_train.close()
-print("%d valid file sets found, written in file %s" % (fileCount, path_train_list))
-if option.calculate_mean:
-    print("pixel mean value = {}".format(pixelSum / pixelNum))
+        print("val folder")
+    data_util(path_file_list, dir_Img, dir_Label, dir_LabelNew, dir_ImgBW)
 
 ### testing images, only convert to grayscale as no labels available
 fout_test = open(path_test_list, 'w')
@@ -215,5 +190,5 @@ fout_test.close()
 print("%d images found" % (fileCount))
 
 print("resized train image are saved to %s" % dir_trainImgBW)
-print("resized train label are saved to %s" % dir_labelnew)
+print("resized train label are saved to %s" % dir_trainLabelNew)
 print("resized test image are saved to %s" % dir_testImgBW)
