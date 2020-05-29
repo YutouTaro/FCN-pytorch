@@ -225,7 +225,7 @@ def idx2clr():
 
 def train():
     fcn_model.train()
-    flog = open(pathjoin(dir_model, "train_log.txt", 'w'))
+    flog = open(pathjoin(dir_model, "train_log.txt"), 'w')
     for epoch in range(epoch_count + 1, option.epochs + 1):
         timestart_epoch = time.time()
         timestart_iters = time.time()
