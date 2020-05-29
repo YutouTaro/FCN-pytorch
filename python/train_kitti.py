@@ -29,6 +29,8 @@ from shutil import copyfile
 import math
 import argparse
 from inspect import currentframe
+from collections import namedtuple
+from collections import Counter
 
 def __line__():
     cf = currentframe()
@@ -102,6 +104,7 @@ else:
 
 if option.isTest:
     option.batch_size = 1
+
 # select model from option
 if option.model == 'fcns':
     model = FCNs
@@ -133,8 +136,8 @@ num_gpu = list(range(torch.cuda.device_count()))
 if use_gpu:
     print("cuda detected: {}".format(num_gpu))
 
-train_data = kittiDataset(option=option, csv_file=path_train_file, isTrain=True, n_class=n_class)
-test_data = kittiDataset(option=option, csv_file=path_test_file, isTrain=False, n_class=n_class)
+train_data = kittiDataset(option=option, csv_file=path_train_file, withLabel=True, n_class=n_class)
+test_data = kittiDataset(option=option, csv_file=path_test_file, withLabel=False, n_class=n_class)
 
 train_loader = DataLoader(train_data, batch_size=option.batch_size, shuffle=True, num_workers=8)
 test_loader = DataLoader(test_data, batch_size=1, num_workers=8)
@@ -165,49 +168,7 @@ scheduler = lr_scheduler.StepLR(optimizer, step_size=option.step_size, gamma=opt
 #     os.makedirs(dir_score)
 # IU_scores = np.zeros((option.epochs, n_class))
 # pixel_scores = np.zeros(option.epochs)
-
-
-def train():
-    fcn_model.train()
-
-    for epoch in range(epoch_count + 1, option.epochs + 1):
-        timestart_epoch = time.time()
-        timestart_iters = time.time()
-        for iter, batch in enumerate(train_loader):
-            optimizer.zero_grad()
-            if use_gpu:
-                inputs = Variable(batch['X']).to(device)
-                labels = Variable(batch['Y']).to(device)
-            else:
-                inputs, labels = Variable(batch['X']), Variable(batch['Y'])
-
-            outputs = fcn_model(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-
-            if iter % 10 == 0:
-                lr = optimizer.param_groups[0]['lr']
-                print("\tepoch: %d, iter %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (
-                    epoch, iter, loss.data, lr, time.time() - timestart_iters))
-                timestart_iters = time.time()
-
-        scheduler.step()
-
-        model_name = pathjoin(dir_model, "net_latest.pth")
-        torch.save(fcn_model.module.state_dict(), model_name)
-        lr = optimizer.param_groups[0]['lr']
-        print(
-            "Epoch %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (epoch, loss.data, lr, time.time() - timestart_epoch))
-        if epoch % 10 == 0:
-            net_name = pathjoin(dir_model, "net_%03d.pth" % (epoch))
-            copyfile(model_name, net_name)
-
-
-def test(epoch=0):
-
-    from collections import namedtuple
-    from collections import Counter
+def idx2clr():
     # index2color
     Label = namedtuple('Label', ['name', 'id', 'trainId', 'category', 'categoryId', 'hasInstances', 'ignoreInEval', 'color'])
     labels = [
@@ -259,7 +220,51 @@ def test(epoch=0):
         # color2index[color] = idx
         index2color[obj.id] = obj.color
         # print("{}:{}".format(color, idx))
-    print(index2color)
+    return index2color
+
+
+def train():
+    fcn_model.train()
+    flog = open(pathjoin(dir_model, "train_log.txt", 'w'))
+    for epoch in range(epoch_count + 1, option.epochs + 1):
+        timestart_epoch = time.time()
+        timestart_iters = time.time()
+        for iter, batch in enumerate(train_loader):
+            optimizer.zero_grad()
+            if use_gpu:
+                inputs = Variable(batch['X']).to(device)
+                labels = Variable(batch['Y']).to(device)
+            else:
+                inputs, labels = Variable(batch['X']), Variable(batch['Y'])
+
+            outputs = fcn_model(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+            if iter % 10 == 0:
+                lr = optimizer.param_groups[0]['lr']
+                print("\tepoch: %d, iter %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (
+                    epoch, iter, loss.data, lr, time.time() - timestart_iters))
+                timestart_iters = time.time()
+
+        scheduler.step()
+
+        model_name = pathjoin(dir_model, "net_latest.pth")
+        torch.save(fcn_model.module.state_dict(), model_name)
+        lr = optimizer.param_groups[0]['lr']
+        logStr = "Epoch %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (epoch, loss.data, lr, time.time() - timestart_epoch)
+        print(logStr)
+        flog.write(logStr+'\n')
+        if epoch % 10 == 0:
+            net_name = pathjoin(dir_model, "net_%03d.pth" % (epoch))
+            copyfile(model_name, net_name)
+    flog.close()
+
+
+def test(epoch=0):
+
+    index2color = idx2clr()
 
     fcn_model.eval()
     dir_predict = pathjoin(dir_root, 'testing', 'predict')
