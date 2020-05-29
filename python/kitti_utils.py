@@ -153,8 +153,6 @@ path_train_list = pathjoin(dir_dataset, 'train.csv')
 path_val_list = pathjoin(dir_dataset, 'val.csv')
 path_test_list = pathjoin(dir_dataset, 'test.csv')
 
-print("train folder")
-
 for path_file_list, dir_Img, dir_Label, dir_LabelNew, dir_ImgBW in zip([path_train_list, path_val_list], [dir_trainImg, dir_valImg], [dir_trainLabel, dir_valLabel], [dir_trainLabelNew, dir_valLabelNew], [dir_trainImgBW, dir_valImgBW]):
     if "train" in path_file_list:
         print("train folder")
