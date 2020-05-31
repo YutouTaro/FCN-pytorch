@@ -63,8 +63,10 @@ parser.add_argument('--continue_train', action='store_true', default=False,
                     help='[train]is continue training by loading a model parameter?')
 parser.add_argument('--which_folder', type=str, default='',
                     help='the folder to load the parameter for test/continue train')
-parser.add_argument('--which_epoch', type=int, default=0, help='the epoch to load for test/continue training')
+parser.add_argument('--which_epoch', type=int, default=0, help='the epoch to load for continue training, or the starting epoch for testing')
+parser.add_argument('--save_epoch_freq', type=int, default=10, help='frequency of saving checkpoints at the end of epochs')
 parser.add_argument('--isTest', action='store_true', default=False, help='is test?')
+parser.add_argument('--isVal', action='store_true', default=False, help='is val?')
 
 option = parser.parse_args()
 
@@ -73,6 +75,7 @@ option = parser.parse_args()
 # print("Configs:", configs)
 dir_root = option.dir_dataset
 path_train_file = pathjoin(dir_root, 'train.csv')
+path_val_file = pathjoin(dir_root, 'val.csv')
 path_test_file = pathjoin(dir_root, 'test.csv')
 # create dir for saving model parameters later on
 dir_model = pathjoin(dir_root, "models")
@@ -89,13 +92,12 @@ else:  # create a new folder to save
     dir_model = pathjoin(dir_model, model_folder)
     os.makedirs(dir_model)
 
-if option.continue_train and option.isTest:  # cannot be True at the same time
+if sum(map(bool, [option.continue_train, option.isTest, option.isVal])) > 1:  # cannot be True at the same time
     print("error with the train/test config!")
     quit()
 
 if option.continue_train or option.isTest:
-    # TODO get the configs as input
-    epoch_count = 500
+    epoch_count = option.which_epoch
     save_path = pathjoin(dir_root, "models", option.which_folder, "net_%03d.pth" % (epoch_count))
     # save_path = "%s/models/net-%s/net_%03d.pth" % (dir_root, option.which_folder, epoch_count)
     option.lr *= math.pow(option.w_decay, int(epoch_count / 50))
@@ -136,10 +138,12 @@ num_gpu = list(range(torch.cuda.device_count()))
 if use_gpu:
     print("cuda detected: {}".format(num_gpu))
 
-train_data = kittiDataset(option=option, csv_file=path_train_file, withLabel=True, n_class=n_class)
-test_data = kittiDataset(option=option, csv_file=path_test_file, withLabel=False, n_class=n_class)
+train_data = kittiDataset(option=option, csv_file=path_train_file, withLabel=True,  n_class=n_class)
+val_data   = kittiDataset(option=option, csv_file=path_val_file,   withLabel=True,  n_class=n_class)
+test_data  = kittiDataset(option=option, csv_file=path_test_file,  withLabel=False, n_class=n_class)
 
 train_loader = DataLoader(train_data, batch_size=option.batch_size, shuffle=True, num_workers=8)
+val_loader = DataLoader(val_data, batch_size=1, num_workers=8)
 test_loader = DataLoader(test_data, batch_size=1, num_workers=8)
 
 vgg_model = VGGNet(requires_grad=True, remove_fc=True)
@@ -256,10 +260,65 @@ def train():
         logStr = "Epoch %d, loss: %.3f, learn_rate: %.7f, %.2f sec" % (epoch, loss.data, lr, time.time() - timestart_epoch)
         print(logStr)
         flog.write(logStr+'\n')
-        if epoch % 10 == 0:
+        if epoch % option.save_epoch_freq == 0:
             net_name = pathjoin(dir_model, "net_%03d.pth" % (epoch))
             copyfile(model_name, net_name)
     flog.close()
+
+def val():
+    dir_valScore = pathjoin(dir_root, 'val', 'scores')
+    if not os.path.exists(dir_valScore):
+        os.makedirs(dir_valScore)
+    dir_valScore = pathjoin(dir_valScore, option.which_folder)
+    if not os.path.exists(dir_valScore):
+        os.makedirs(dir_valScore)
+        print("%s created." % dir_valScore)
+    else:
+        print("%s exists." % dir_valScore)
+
+    valEpochs = range(option.which_epoch, option.epochs+1, option.save_epoch_freq)
+    num_saved_epochs = len(valEpochs)
+    IU_scores = np.zeros((num_saved_epochs,n_class))
+    pixel_scores = np.zeros(num_saved_epochs)
+
+
+    for i, epoch in zip(range(num_saved_epochs), valEpochs):
+        total_ious = []
+        pixel_accs = []
+        model_path = pathjoin(dir_root, "models", option.which_folder, "net_%03d.pth" % (epoch))
+        assert os.path.exists(model_path)
+        fcn_model.load_state_dict(torch.load(model_path))
+        fcn_model.eval()
+        for iter, batch in enumerate(val_loader):
+            timeIter = time.time()
+            if use_gpu:
+                inputs = Variable(batch['X'].cuda())
+            else:
+                inputs = Variable(batch['X'])
+
+            output = fcn_model(inputs)
+            output = output.data.cpu().numpy()
+
+            N, _, h, w = output.shape
+            pred = output.transpose(0, 2, 3, 1).reshape(-1, n_class).argmax(axis=1).reshape(N, h, w)
+
+            target = batch['l'].cpu().numpy().reshape(N, h, w)
+            for p, t in zip(pred, target):
+                total_ious.append(iou(p, t))
+                pixel_accs.append(pixel_acc(p, t))
+
+            print("\tepoch: %d, iter: %d, %.2f sec" % (epoch, iter, time.time() - timeIter))
+
+        # Calculate average IoU
+        total_ious = np.array(total_ious).T  # n_class * val_len
+        ious = np.nanmean(total_ious, axis=1)
+        pixel_accs = np.array(pixel_accs).mean()
+        print("epoch {}, pix_acc: {}, meanIoU: {}, IoUs: {}".format(epoch, pixel_accs, np.nanmean(ious), ious))
+        IU_scores[i] = ious
+        pixel_scores[i] = pixel_accs
+
+    np.save(os.path.join(dir_valScore, "meanIU"), IU_scores)
+    np.save(os.path.join(dir_valScore, "meanPixel"), pixel_scores)
 
 
 def test(epoch=0):
@@ -340,7 +399,11 @@ def pixel_acc(pred, target):
 
 
 if __name__ == "__main__":
-    if option.isTest:
+    if option.isVal:
+        val()
+    elif option.isTest:
         test(option.which_epoch)
     else:
         train()
+        option.which_epoch = 450
+        val()
