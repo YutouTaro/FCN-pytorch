@@ -292,7 +292,8 @@ def val():
         total_ious = []
         pixel_accs = []
         model_path = pathjoin(dir_root, "models", option.which_folder, "net_%03d.pth" % (epoch))
-        assert os.path.exists(model_path)
+        # assert os.path.exists(model_path)
+        print("model path: %s" % (model_path))
         fcn_model.load_state_dict(torch.load(model_path))
         fcn_model.eval()
         for iter, batch in enumerate(val_loader):
