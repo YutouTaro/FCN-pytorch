@@ -81,7 +81,7 @@ path_test_file = pathjoin(dir_root, 'test.csv')
 dir_model = pathjoin(dir_root, "models")
 if not os.path.exists(dir_model):
     os.makedirs(dir_model)
-if option.isTest or option.continue_train:
+if option.isTest or option.continue_train or option.isVal:
     dir_model = pathjoin(dir_model, option.which_folder)
     if not os.path.exists(dir_model):
         print("%s does not exist! Check your input argument of \"--which_folder\"" % dir_model)
@@ -96,7 +96,7 @@ if sum(map(bool, [option.continue_train, option.isTest, option.isVal])) > 1:  # 
     print("error with the train/test config!")
     quit()
 
-if option.continue_train or option.isTest:
+if option.continue_train or option.isTest:# or option.isVal:
     epoch_count = option.which_epoch
     save_path = pathjoin(dir_root, "models", option.which_folder, "net_%03d.pth" % (epoch_count))
     # save_path = "%s/models/net-%s/net_%03d.pth" % (dir_root, option.which_folder, epoch_count)
@@ -104,7 +104,7 @@ if option.continue_train or option.isTest:
 else:
     epoch_count = 0
 
-if option.isTest:
+if option.isTest or option.isVal:
     option.batch_size = 1
 
 # select model from option
