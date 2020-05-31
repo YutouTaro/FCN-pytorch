@@ -155,7 +155,7 @@ test_loader = DataLoader(test_data, batch_size=1, num_workers=8)
 vgg_model = VGGNet(requires_grad=True, remove_fc=True)
 fcn_model = model(pretrained_net=vgg_model, n_class=n_class)
 
-if option.isTest or option.continue_train or option.isVal:
+if option.isTest or option.continue_train:
     fcn_model.load_state_dict(torch.load(save_path))
     print("loaded parameters from %s" % (save_path))
 
