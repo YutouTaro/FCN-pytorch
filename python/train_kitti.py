@@ -31,6 +31,7 @@ import argparse
 from inspect import currentframe
 from collections import namedtuple
 from collections import Counter
+from collections import OrderedDict
 
 def __line__():
     cf = currentframe()
@@ -292,9 +293,15 @@ def val():
         total_ious = []
         pixel_accs = []
         model_path = pathjoin(dir_root, "models", option.which_folder, "net_%03d.pth" % (epoch))
-        # assert os.path.exists(model_path)
-        print("model path: %s" % (model_path))
-        fcn_model.load_state_dict(torch.load(model_path))
+        assert os.path.exists(model_path)
+        # print("model path: %s" % (model_path))
+        state_dict = torch.load(model_path)
+        new_state_dict = OrderedDict()
+        for k, v in state_dict.items():
+            if "module." not in k:
+                k = "module." + k
+            new_state_dict[k] = v
+        fcn_model.load_state_dict(new_state_dict)
         fcn_model.eval()
         for iter, batch in enumerate(val_loader):
             timeIter = time.time()
