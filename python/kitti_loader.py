@@ -26,7 +26,7 @@ class kittiDataset(Dataset):
         self.withLabel = withLabel
         if option.channels == 1:
             # self.means = np.repeat(99.21219586, 3) / 255.  # np.array([99.21219586])/255.
-            self.means = np.repeat(99.23180176, 3) / 255.  # np.array([99.21219586])/255.
+            self.means = np.repeat(99.98187584, 3) / 255.  # np.array([99.21219586])/255.
         else:
             self.means = np.array([96.6757915,  101.60559698,  97.83071057]) / 255.
         if withLabel:
