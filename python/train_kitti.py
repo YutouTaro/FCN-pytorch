@@ -63,7 +63,7 @@ parser.add_argument('--new_width', type=int, default=1224, help='width after cro
 parser.add_argument('--continue_train', action='store_true', default=False,
                     help='[train]is continue training by loading a model parameter?')
 parser.add_argument('--which_folder', type=str, default='',
-                    help='the folder to load the parameter for test/continue train')
+                    help='the folder to save&load the parameter for test/continue train')
 parser.add_argument('--which_epoch', type=int, default=0, help='the epoch to load for continue training, or the starting epoch for testing')
 parser.add_argument('--save_epoch_freq', type=int, default=10, help='frequency of saving checkpoints at the end of epochs')
 parser.add_argument('--isTest', action='store_true', default=False, help='is test?')
@@ -90,6 +90,7 @@ if option.isTest or option.continue_train or option.isVal:
 else:  # create a new folder to save
     timeNow = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(seconds=28800)))
     model_folder = timeNow.strftime("net-%y%m%d-%H%M%S")
+    option.which_folder = model_folder
     dir_model = pathjoin(dir_model, model_folder)
     os.makedirs(dir_model)
 
@@ -419,5 +420,3 @@ if __name__ == "__main__":
         test(option.which_epoch)
     else:
         train()
-        option.which_epoch = 450
-        val()
