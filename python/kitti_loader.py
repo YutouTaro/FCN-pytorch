@@ -28,7 +28,7 @@ class kittiDataset(Dataset):
             # self.means = np.repeat(99.21219586, 3) / 255.  # np.array([99.21219586])/255.
             self.means = np.repeat(99.98187584, 3) / 255.  # np.array([99.21219586])/255.
         else:
-            self.means = np.array([96.6757915,  101.60559698,  97.83071057]) / 255.
+            self.means = np.array([96.61330759, 102.00880164, 98.41855599]) / 255.
         if withLabel:
             self.crop = option.isCrop
             self.flip_rate = 0.5
