@@ -397,20 +397,25 @@ def iou(pred, target):
     for cls in range(n_class):
         pred_inds = pred == cls
         target_inds = target == cls
+        if pred_inds.sum() == 0 and target_inds.sum() == 0:
+            ious.append(float('nan'))
+            continue
         intersection = pred_inds[target_inds].sum()
         union = pred_inds.sum() + target_inds.sum() - intersection
-        if union == 0:
-            ious.append(float('nan'))  # if there is no ground truth, do not include in evaluation
-        else:
-            ious.append(float(intersection) / max(union, 1))
+        # if union == 0:
+        #     ious.append(float('nan'))  # if there is no ground truth, do not include in evaluation
+        # else:
+        assert(union > 0)
+        ious.append(float(intersection) / max(union, 1))
         # print("cls", cls, pred_inds.sum(), target_inds.sum(), intersection, float(intersection) / max(union, 1))
     return ious
 
 
 def pixel_acc(pred, target):
     correct = (pred == target).sum()
-    total = (target == target).sum()
-    return correct / total
+    # total = (target == target).sum()
+    # total = target.size
+    return correct / target.size
 
 
 if __name__ == "__main__":
