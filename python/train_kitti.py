@@ -340,7 +340,7 @@ def val():
             for idx, num in Counter(imgout.flatten()).items():
                 img_semanticRGB[imgout == idx] = index2color[idx]
             img_semanticRGB = Image.fromarray(img_semanticRGB.astype(np.uint8))
-            path_pred_img = pathjoin(dir_predict, "pred_%03d.png" % iter)
+            path_pred_img = pathjoin(dir_predict, "pred_%03d.png" % (iter+190))
             img_semanticRGB.save(path_pred_img)
 
         # Calculate average IoU
@@ -404,7 +404,7 @@ def test(epoch=0):
             imgrgb_np[imgout == idx] = index2color[idx]
         # print(sorted(Counter(imgout.flatten()).items()))
         imgrgb = Image.fromarray(imgrgb_np.astype(np.uint8))
-        path_pred_img = pathjoin(dir_predict, "pred_%03d.png"%(iter+190))
+        path_pred_img = pathjoin(dir_predict, "pred_%03d.png"%iter)
         imgrgb.save(path_pred_img)
         # break
 
