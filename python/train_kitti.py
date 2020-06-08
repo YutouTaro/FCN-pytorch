@@ -341,6 +341,7 @@ def val():
                 img_semanticRGB[imgout == idx] = index2color[idx]
             img_semanticRGB = Image.fromarray(img_semanticRGB.astype(np.uint8))
             path_pred_img = pathjoin(dir_predict, "pred_%03d.png" % iter)
+            img_semanticRGB.save(path_pred_img)
 
         # Calculate average IoU
         total_ious = np.array(total_ious).T  # n_class * val_len
