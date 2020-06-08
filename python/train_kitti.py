@@ -274,6 +274,7 @@ def train():
     flog.close()
 
 def val():
+    index2color = idx2clr()
     dir_valScore = pathjoin(dir_root, 'val', 'scores')
     if not os.path.exists(dir_valScore):
         os.makedirs(dir_valScore)
@@ -283,6 +284,15 @@ def val():
         print("%s created." % dir_valScore)
     else:
         print("%s exists." % dir_valScore)
+    dir_predict = pathjoin(dir_root, 'val', 'predict')
+    if not os.path.exists(dir_predict):
+        os.makedirs(dir_predict)
+    dir_predict = pathjoin(dir_predict, option.which_folder)
+    if not os.path.exists(dir_predict):
+        os.makedirs(dir_predict)
+        print("%s created." % dir_predict)
+    else:
+        print("%s exists." % dir_predict)
 
     valEpochs = range(option.which_epoch, option.epochs+1, option.save_epoch_freq)
     num_saved_epochs = len(valEpochs)
@@ -323,6 +333,14 @@ def val():
                 pixel_accs.append(pixel_acc(p, t))
 
             print("\tepoch: %d, iter: %d, %.2f sec" % (epoch, iter, time.time() - timeIter))
+
+            imgout = pred.transpose((1, 2, 0))
+            imgout = imgout[:, :, 0]
+            img_semanticRGB = np.zeros((h,w,3))
+            for idx, num in Counter(imgout.flatten()).items():
+                img_semanticRGB[imgout == idx] = index2color[idx]
+            img_semanticRGB = Image.fromarray(img_semanticRGB.astype(np.uint8))
+            path_pred_img = pathjoin(dir_predict, "pred_%03d.png" % iter)
 
         # Calculate average IoU
         total_ious = np.array(total_ious).T  # n_class * val_len
@@ -385,7 +403,7 @@ def test(epoch=0):
             imgrgb_np[imgout == idx] = index2color[idx]
         # print(sorted(Counter(imgout.flatten()).items()))
         imgrgb = Image.fromarray(imgrgb_np.astype(np.uint8))
-        path_pred_img = pathjoin(dir_predict, "pred_%03d.png"%iter)
+        path_pred_img = pathjoin(dir_predict, "pred_%03d.png"%(iter+190))
         imgrgb.save(path_pred_img)
         # break
 
